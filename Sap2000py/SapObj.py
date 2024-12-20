@@ -1893,7 +1893,6 @@ class SapFrameObj:
         return ret
 
 
-
 class CableObj_Set:
     def __init__(self,Sapobj):
         """
@@ -2492,7 +2491,6 @@ class SapCableObj:
         """
         ret=self.__Model.CableObj.Count()
         return ret
-
 
 
 class TendonObj_Set:

@@ -662,7 +662,7 @@ if __name__ == "__main__":
     print(Sap.SapVersion)
     Sap.getSapVersion()
 
-    Sap.setProjectInfo(field="Company Name", value="Tongji University")
+    Sap.setProjectInfo(field = "Company Name", value = "Tongji University")
     Sap.setProjectInfo("Author", "Gou Lingyun")
     Sap.setProjectInfo("Email", "gulangyu@tongji.edu.cn")
     print(Sap.ProjectInfo)

@@ -1,6 +1,6 @@
 import numpy as np
 class Add_Joints_Cartesian:
-    def __init__(self,Sapobj,Cartesian_coord):
+    def __init__(self, Sapobj, Cartesian_coord):
         """
         Add Joints by Cartesian coordinate system
         input Cartesian_coord(ndarray)-Nx3 array or Nx2 array in 2D model
@@ -27,24 +27,34 @@ class Add_Joints_Cartesian:
         if N != uniqueN:print(N-uniqueN,' joints duplicates! please check!')
         
 class Add_Elements:
-    def __init__(self,Sapobj,Connections):
+    def __init__(self, Sapobj, Connections):
         """
         Add Elements by Connections
         input Connections(ndarray)-Nx2 array
         """
         self.__Object = Sapobj._Object
         self.__Model = Sapobj._Model
+
+        #print("\nSapobj.__dict__ : ", Sapobj.__dict__)
+        #print("\nConnections : ", Connections)
+        myShape = np.shape(Connections)
+        #print("\nmyShape : ", myShape)
+
         N0 = Sapobj.Connections.shape[0] if 'Connections' in Sapobj.__dict__ else 0
-        all_connections = Sapobj.Connections if N0 else np.empty(shape=(0,Connections.shape[1]))
+        #print("\nN0 : ", N0)
+        all_connections = Sapobj.Connections if N0 else np.empty( shape = (0, myShape[1]) )
+        #print("\nall_connections : ", all_connections)
         # Add new connections
-        N,dim = Connections.shape
+        N, dim = myShape
         uniqueN = N
         for i in range(N):
-            if (Connections[i]==all_connections).all(-1).any():
+            if (Connections[i] == all_connections).all(-1).any():
                 uniqueN -= 1  # element connection already exists
-                print('Connections ',Connections[i],' duplicates! please check!')
+                print('Connections ', Connections[i],' duplicates! please check!')
             else:
-                self.__Model.FrameObj.AddByPoint(Connections[i,0],Connections[i,1])
+                JointI, JointJ = Connections[i]
+                #print("JointI, JointJ : ", JointI, JointJ)
+                self.__Model.FrameObj.AddByPoint(str(JointI), str(JointJ))
                 all_connections = np.vstack((all_connections, Connections[i]))
         Sapobj.Connections = all_connections
 
