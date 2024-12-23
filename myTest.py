@@ -7,7 +7,7 @@ from rich import print
 from Sap2000py import Saproject
 
 # full path to the model
-ModelPath = Path('.\Test\Test.sdb')
+ModelPath = Path('.\Test\myTest.sdb')
 
 # Create a Sap2000py obj (default: attatch to instance and create if not exist)
 Sap = Saproject()
@@ -41,7 +41,7 @@ Sap.Scripts.AddCommonMaterialSet(standard = "JTG")
 
 # Build your Model Here
 # Add Joints by Script
-joint_coord = np.array([[0,0,0], [10,0,0], [20,0,0], [30,0,0]])
+joint_coord = np.array([[0,0,0], [0,0,3], [6,0,3], [6,0,0]])
 Sap.Scripts.AddJoints(joint_coord)
 # You can also Add Joints once a time : Sap.Assign.PointObj.AddCartesian(x=0, y=0, z=0)
 # After using this script to add joints, you can see all the joints in var Sap.coord_joints
@@ -51,11 +51,14 @@ Sap.Scripts.AddJoints(joint_coord)
 Sap.Scripts.AddElements([[1,2], [2,3], [3,4]])
 #print("Connections : ", Sap.Connections)
 
-# Add elements to your group
-#Sap.Scripts.Group.AddtoGroup('Edge',['1','4'],"Point")
+Sap.RefreshView(0, False)
+
+# Add elements to your group / add fix external joints
+Sap.Scripts.Group.AddtoGroup('Edge', ['1','4'], "Point")
+###print("Scripts : ", Sap.Scripts)
 # Check Your Group Elements
 #Eledict = Sap.Scripts.Group.GetElements('Edge')
-#print(Eledict)
+#print("Eledict : ", Eledict)
 # Select the group you need
 #Sap.Scripts.Group.Select('Edge')
 
@@ -63,7 +66,7 @@ Sap.Scripts.AddElements([[1,2], [2,3], [3,4]])
 # Remove all cases for analysis
 #Sap.Scripts.Analyze.RemoveCases("All")
 # Select cases for analysis
-#Sap.Scripts.Analyze.AddCases(Casename = ['DEAD', 'MODAL','yourCase1', 'yourCase2'])
+#Sap.Scripts.Analyze.AddCases(CaseName = ['DEAD', 'MODAL'])
 # Delete Results
 #Sap.Scripts.Analyze.DeleteResults("All")
 # Run analysis

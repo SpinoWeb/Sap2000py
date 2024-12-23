@@ -1,6 +1,6 @@
 import os
 class CommonMaterialSet_China:
-    def __init__(self,Sapobj,standard):
+    def __init__(self, Sapobj, standard):
         """
         Add Common Material Set for China with your desired standard,
         for China it includes ["GB","JTG","TB","User"]
@@ -8,7 +8,7 @@ class CommonMaterialSet_China:
         self.__Object = Sapobj._Object
         self.__Model = Sapobj._Model
         if standard !=  "User":
-            print('Adding Chinese '+standard +' Materials...')
+            print('Adding Chinese ' + standard + ' Materials...')
             # Add commonly used materials
             Steel = 1
             Concrete = 2

@@ -38,7 +38,7 @@ class SapGroup:
             print('You have entered the wrong GroupName, please check in the Caselist below:')
             print(self.GetGroupNames())
 
-    def GetElements(self,GroupName:str):
+    def GetElements(self, GroupName:str):
         """
         Get elements in group
         input:
@@ -49,25 +49,30 @@ class SapGroup:
             element id : type(Point:1,Frame:2,Cable:3,
                         Tendon:4,Area:5,Solid:6,Link:7)
         """
+        #print("GroupName : ", GroupName)
+
         # Change type to list
-        if type(GroupName)==str:
+        if type(GroupName) == str:
             GroupName = [GroupName]
+        #print("GroupName : ", GroupName)
+        
         nonameflag = False
         ElementList = {}
         for Name in GroupName:
             if Name not in self.GetGroupNames():
-                print('GroupName "{}"dosen\'t exist!'.format(Name))
+                #print('GroupName "{}"dosen\'t exist!'.format(Name))
                 nonameflag = True
             else:
-                NumberElements,typelist,elementList,ret = self.__Model.GroupDef.GetAssignments(Name)
+                NumberElements, typelist, elementList, ret = self.__Model.GroupDef.GetAssignments(Name)
+                #print(NumberElements, typelist, elementList, ret)
                 # Change typelist to typestr_list
                 typestr_list = []
                 for types in typelist:
-                    typestr = self._Sapobj.Scripts.lookup(self._Sapobj.ObjDict,types)
+                    typestr = self._Sapobj.Scripts.lookup(self._Sapobj.ObjDict, types)
                     typestr_list.append(typestr)
                 
                 # combine elementList and typestr_list to a new list
-                newlist = [tstr+':'+ele for tstr,ele in zip(typestr_list,elementList)]
+                newlist = [tstr + ':' + ele for tstr,ele in zip(typestr_list, elementList)]
                 # update the ElementList
                 ElementList.update(dict.fromkeys(newlist))
 
@@ -76,7 +81,7 @@ class SapGroup:
             print(self.GetGroupNames())
         return list(ElementList)
 
-    def AddtoGroup(self,GroupName:str,namelist,type:Literal['Point','Frame','Cable','Tendon','Area','Solid','Link']):
+    def AddtoGroup(self, GroupName:str, namelist, type:Literal['Point','Frame','Cable','Tendon','Area','Solid','Link']):
         """
         Add elements to group
         input:
@@ -85,7 +90,9 @@ class SapGroup:
             typeStr(str):{'Point':1,'Frame':2,'Cable':3,
                         'Tendon':4,'Area':5,'Solid':6,'Link':7}
         """
-        Objstr = type+'Obj'
+        #print(GroupName, namelist, type)
+
+        Objstr = type + 'Obj'
         SapModel = self.__Model
 
         # check if this group exists

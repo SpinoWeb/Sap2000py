@@ -55,8 +55,8 @@ Sap.Scripts.AddElements([[1,2],[2,3],[3,4]])
 # Add elements to your group
 Sap.Scripts.Group.AddtoGroup('Edge',['1','4'],"Point")
 # Check Your Group Elements
-Eledict = Sap.Scripts.Group.GetElements('Edge')
-print(Eledict)
+#Eledict = Sap.Scripts.Group.GetElements('Edge')
+#print(Eledict)
 # Select the group you need
 Sap.Scripts.Group.Select('Edge')
 

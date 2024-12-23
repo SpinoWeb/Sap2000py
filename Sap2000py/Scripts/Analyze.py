@@ -8,36 +8,37 @@ class SapAnalyze:
         self.__Model = Sapobj._Model
         self.CaseFlags = {1:'Not run',2:'Could not start',3:'Not finished',4:'Finished'}
 
-    def AddCases(self,CaseName="All"):
+    def AddCases(self, CaseName="All"):
         """
         Add CaseName(list) to Analyze
         """
-        self.__ChangeCases(CaseName,Run = True)
+        self.__ChangeCases(CaseName, Run = True)
 
     def RemoveCases(self,CaseName="All"):
         """
         Remove CaseName(list) from Analyze
         """
-        self.__ChangeCases(CaseName,Run = False)
+        self.__ChangeCases(CaseName, Run = False)
 
-    def __ChangeCases(self,Casename,Run:bool):
+    def __ChangeCases(self, Casename, Run:bool):
         """
         Change Cases in Casename(list) to Run(bool)
         """
         CaseRunFlags = self.__Model.Analyze.GetRunCaseFlag()
+        #print("CaseRunFlags : ", CaseRunFlags)
 
         # All CaseName
         if Casename == "All":
             Casename = CaseRunFlags[1]
 
         # Change type to list
-        if type(Casename)==str:
+        if type(Casename) == str:
             Casename = [Casename]
 
         nonameflag = False
         for Name in Casename:
             if Name not in CaseRunFlags[1]:
-                print('CaseName "{}"dosen\'t exist!'.format(Name))
+                print('CaseName "{}" doesn\'t exist!'.format(Name))
                 nonameflag = True
             else:
                 self.__Model.Analyze.SetRunCaseFlag(Name, Run)
@@ -46,16 +47,18 @@ class SapAnalyze:
             print('You have entered the wrong CaseName, please check in the Caselist below:')
             print(CaseRunFlags[1])
 
-    def RunAll(self,iter=3):
+    def RunAll(self, iter = 3):
         """
         Run All cases set to run
         """
         CaseRunFlags = self.__Model.Analyze.GetRunCaseFlag()
+        #print("CaseRunFlags : ", CaseRunFlags)
         allflag = False
         i = 1
         while not allflag:
             self.__Model.Analyze.RunAnalysis()
             CaseStatus = self.GetCaseStatus()
+            #print("CaseStatus : ", CaseStatus)
             for Name in CaseRunFlags[1]:
                 allflag = True
                 index = CaseRunFlags[1].index(Name)
@@ -64,14 +67,14 @@ class SapAnalyze:
                 if  CasetoRun == True and Runflag != "Finished":
                     # if any case not finished, run again
                     allflag = False
-                    print('Case: "{}" {} in iteration {}!!'.format(Name,Runflag,i))
+                    print('Case: "{}" {} in iteration {}!!'.format(Name, Runflag, i))
                     
-            i = i+1
+            i = i + 1
             if i > iter:
                 print('Analysis not finished in {} times, please check the cases above!:'.format(iter))
                 break
 
-    def DeleteResults(self,Casename="All"):
+    def DeleteResults(self, Casename = "All"):
         """
         Delete Results of CaseName(list)
         """
@@ -82,13 +85,13 @@ class SapAnalyze:
             Casename = CaseStatus[1]
 
         # Change type to list
-        if type(Casename)==str:
+        if type(Casename) == str:
             Casename = [Casename]
 
         nonameflag = False
         for Name in Casename:
             if Name not in CaseStatus[1]:
-                print('CaseName "{}"dosen\'t exist!'.format(Name))
+                print('CaseName "{}" doesn\'t exist!'.format(Name))
                 nonameflag = True
             else:
                 self.__Model.Analyze.DeleteResults(Name)
@@ -97,7 +100,7 @@ class SapAnalyze:
             print('You have entered the wrong CaseName, please check in the Caselist below:')
             print(CaseStatus[1])
 
-    def GetCaseStatus(self,Casename="All"):
+    def GetCaseStatus(self, Casename = "All"):
         """
         Get Case Status, All cases by default
         """
