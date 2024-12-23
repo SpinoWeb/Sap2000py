@@ -1,4 +1,5 @@
 from typing import Literal
+
 class SapLoadPatterns:
     def __init__(self,Sapobj):
         """

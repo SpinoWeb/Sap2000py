@@ -113,5 +113,5 @@ class CommonMaterialSet_China:
             MaterialList = Sapobj._Model.PropMaterial.GetNameList()
             print(MaterialList[0],' Materials are Defined:\n',MaterialList[1])
             Sapobj.MaterialList = MaterialList[1]
-            print('Edit '+__file__+' to modify the materials you need!')
+            print('Edit ' + __file__ + ' to modify the materials you need!')
             print('Material names are stored in Sapobject.MaterialList')

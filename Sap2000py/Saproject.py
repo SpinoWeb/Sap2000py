@@ -38,7 +38,6 @@ class SapMeta(type):
         else:
             return self.__instance
 
-
 class SapScripts:
     """SAP2000 script class.
 
@@ -145,92 +144,60 @@ class SapScripts:
             for j in range(n):
                 WorkSheet.cell(rownum + i, colnum + j, value=dataArray[i, j])
 
+class SapCore:
+    """SAP2000 core class.
 
-class Saproject(metaclass=SapMeta):
+    This class integrates some commonly used SAP2000 scripts under the
+    Saproject class, providing methods for frequently used functionalities.
+    """
+
+    def __init__(self, SapObj):
+        """Initializes the SapScripts with a parent Saproject object.
+
+        Args:
+            SapObj: The parent Saproject object.
+        """
+        self.__Object = SapObj._Object
+        self.__Model = SapObj._Model
+        self.Sapobj = SapObj
+
+    def AddCommonMaterialSet(self, standard: Literal["GB", "JTG", "TB", "User"] = "GB"):
+        """Adds common material sets for China.
+
+        Adds a common material set according to the specified standard. For
+        China, the available standards include ["GB", "JTG", "TB", "User"].
+
+        Args:
+            standard (str): The desired standard for material sets. Defaults
+                to "GB".
+        """
+        from Sap2000py.Scripts.Common_Material_Set import CommonMaterialSet_China
+
+        CommonMaterialSet_China(self.Sapobj, standard)
+
+    def add_cartesian_joints(self, cartesian_coords: NDArray[np.float64] = np.empty(shape=(0, 3))):
+        """Adds joints using cartesian coordinates.
+
+        Args:
+            cartesian_coords (ndarray): Nx3 array or Nx2 array (for 2D models)
+                of cartesian coordinates.
+        """
+        from .core.build import add_cartesian_joints
+
+        add_cartesian_joints(self.Sapobj, cartesian_coords)
+
+    def add_frame_by_points(self, connectivity_frame: NDArray[np.float64] = np.empty(shape=(0, 2))):
+        """Adds elements by their connections.
+
+        Args:
+            connectivity_frame (ndarray): Nx2 array of connectivity_frame.
+        """
+        from .core.build import add_frame_by_points
+
+        add_frame_by_points(self.Sapobj, connectivity_frame)
+
+class Saproject(metaclass = SapMeta):
     """SAP2000 project class.
-
-    This class encapsulates the SAP2000 API, providing various methods to
-    interact with and manipulate SAP2000 models. It follows the singleton
-    pattern enforced by the `SapMeta` metaclass, ensuring only one instance
-    of this class can be created.
-
-    Classes:
-        File: An instance of the `SapFile` class to handle file operations.
-        Define: An instance of the `SapDefinitions` class to manage model
-            definitions.
-        Assign: An instance of the `SapAssign` class to assign properties to
-            model objects.
-        Analyze: An instance of the `SapAnalyze` class to perform analyses.
-        Results: An instance of the `SapResults` class to retrieve analysis
-            results.
-        Scripts: An instance of the `SapScripts` class that provides access
-            to additional script-based functionalities.
-
-    Attributes:
-        _Object: A reference to the SAP2000 application object.
-        _Model: A reference to the SAP2000 model object.
-        SapVersion: Returns the current SAP2000 program version.
-        ProjectInfo: Returns the project information as a dictionary.
-        FilePath: Returns the file path of the current model.
-        FileName: Returns the file name of the current model.
-        CoordSystem: Returns the name of the present coordinate system.
-        Unitdict: Returns a dictionary mapping unit names to unit IDs.
-        Unitdict_rev: Returns a dictionary mapping unit IDs to unit names.
-        Objectdict: Returns a dictionary mapping object types to IDs.
-        Unitid: Returns the unit ID of the current SAP2000 model.
-        Units: Returns the unit name of the current SAP2000 model.
-        is_locked: Checks if the model is locked.
-
-
-    Methods:
-        createSap: Opens the SAP2000 program and initializes the API instance.
-        openSap: Starts the SAP2000 application and initializes a new model.
-        closeSap: Closes the SAP2000 program.
-        lockModel: Locks the current model.
-        unlockModel: Unlocks the current model.
-        getUnits: Logs and returns the units and unit ID of the current model.
-        setUnits: Sets the units of the current SAP2000 model.
-        getSapVersion: Logs and returns the current SAP2000 program version.
-        getProjectInfo: Logs the project information.
-        setProjectInfo: Sets the project information fields.
-        setDefaultProjectInfo: Sets the default project information.
-        getFileName: Logs and returns the file name of the current model.
-        getCoordSystem: Logs and returns the name of the present coordinate
-            system.
-        RefreshView: Refreshes the view window.
-
-    Example:
-        The following example demonstrates how to use the Saproject class:
-
-        ```python
-        from pathlib import Path
-
-        Sap = Saproject()
-        Sap.openSap()
-        Sap.File.New_Blank()
-        Sap.File.Open(Path('.') / "Test" / "Test.sdb")
-
-        print(Sap.Units)
-        Sap.getUnits()
-
-        print(Sap.SapVersion)
-        Sap.getSapVersion()
-
-        Sap.setProjectInfo(field="Company Name", value="Tongji University")
-        Sap.setProjectInfo("Author", "Gou Lingyun")
-        Sap.setProjectInfo("Email", "gulangyu@tongji.edu.cn")
-        print(Sap.ProjectInfo)
-        Sap.getProjectInfo()
-
-        print(Sap.FileName)
-        Sap.getFileName()
-
-        print(Sap.CoordSystem)
-        Sap.getCoordSystem()
-
-        # Test setting units
-        Sap.setUnits("KN_m_E")  # This will log an error as "KN_m_E" is not a supported unit
-        Sap.setUnits("KN_m_C")  # This will successfully change the units to KN_m_C
         ```
     """
 
@@ -242,6 +209,7 @@ class Saproject(metaclass=SapMeta):
                 instance. Defaults to True.
         """
         self.createSap(AttachToInstance)
+        #
         from Sap2000py.SapDeal import (
             SapFile,
             SapDefinitions,
@@ -249,13 +217,16 @@ class Saproject(metaclass=SapMeta):
             SapAnalyze,
             SapResults,
         )
-
+        #
         self.File = SapFile(self)
         self.Define = SapDefinitions(self)
         self.Assign = SapAssign(self)
         self.Analyze = SapAnalyze(self)
         self.Results = SapResults(self)
         self.Scripts = SapScripts(self)
+
+        #
+        self.core = SapCore(self)
 
     @property
     def SapVersion(self):
@@ -654,21 +625,21 @@ if __name__ == "__main__":
     Sap = Saproject()
     Sap.openSap()
     Sap.File.New_Blank()
-    Sap.File.Open(Path(".") / "Test" / "Test.sdb")
+    Sap.File.Open(Path(".") / "Test" / "myTest.sdb")
 
     print(Sap.Units)
     Sap.getUnits()
 
-    print(Sap.SapVersion)
+    print("SapVersion : ", Sap.SapVersion)
     Sap.getSapVersion()
 
-    Sap.setProjectInfo(field = "Company Name", value = "Tongji University")
-    Sap.setProjectInfo("Author", "Gou Lingyun")
-    Sap.setProjectInfo("Email", "gulangyu@tongji.edu.cn")
-    print(Sap.ProjectInfo)
+    #Sap.setProjectInfo(field = "Company Name", value = "Tongji University")
+    #Sap.setProjectInfo("Author", "Gou Lingyun")
+    #Sap.setProjectInfo("Email", "gulangyu@tongji.edu.cn")
+    print("ProjectInfo : ", Sap.ProjectInfo)
     Sap.getProjectInfo()
 
-    print(Sap.FileName)
+    print("FileName : ", Sap.FileName)
     Sap.getFileName()
 
     print(Sap.CoordSystem)

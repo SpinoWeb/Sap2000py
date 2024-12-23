@@ -1,4 +1,5 @@
 from typing import Literal
+
 class SapSection:
     def __init__(self,Sapobj):
         """

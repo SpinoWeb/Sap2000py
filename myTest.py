@@ -37,24 +37,23 @@ Sap.getUnits()
 Sap.setUnits("KN_m_C")
 
 # Add China Common Material Set·
-Sap.Scripts.AddCommonMaterialSet(standard = "JTG")
+#Sap.Scripts.AddCommonMaterialSet(standard = "JTG")
 
-# Build your Model Here
-# Add Joints by Script
-joint_coord = np.array([[0,0,0], [0,0,3], [6,0,3], [6,0,0]])
-Sap.Scripts.AddJoints(joint_coord)
+# add cartesian joints
+joint_coordinates = np.array([ [0,0,0], [0,0,3], [6,0,3], [6,0,0]])
+Sap.core.add_cartesian_joints(joint_coordinates)
 # You can also Add Joints once a time : Sap.Assign.PointObj.AddCartesian(x=0, y=0, z=0)
 # After using this script to add joints, you can see all the joints in var Sap.coord_joints
-#print("coord_joints : ", Sap.coord_joints)
+print("joint_coordinates : ", Sap.joint_coordinates)
 
-# Build Elements by Script
-Sap.Scripts.AddElements([[1,2], [2,3], [3,4]])
-#print("Connections : ", Sap.Connections)
+# add frame elements
+Sap.core.add_frame_by_points([[1,2], [2,3], [3,4]])
+print("connectivity_frame : ", Sap.connectivity_frame)
 
 Sap.RefreshView(0, False)
 
 # Add elements to your group / add fix external joints
-Sap.Scripts.Group.AddtoGroup('Edge', ['1','4'], "Point")
+#Sap.Scripts.Group.AddtoGroup('Edge', ['1','4'], "Point")
 ###print("Scripts : ", Sap.Scripts)
 # Check Your Group Elements
 #Eledict = Sap.Scripts.Group.GetElements('Edge')

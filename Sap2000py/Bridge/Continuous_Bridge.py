@@ -195,7 +195,7 @@ class Sap_Double_Box_Pier:
         # self.add_mass()
         Saproject().RefreshView()
     
-    def connect_with_base(self,baseobj:Literal['SapBase_6Spring']):
+    def connect_with_base(self, baseobj:Literal['SapBase_6Spring']):
         self.base = baseobj
         self.base.get_spring_data()
         self.base.add_spring()

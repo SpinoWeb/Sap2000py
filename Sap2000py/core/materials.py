@@ -1,5 +1,5 @@
 
-class SapMaterial:
+class materials:
     def __init__(self, SapObj):
         """
         Passing in the parent class object directly is to avoid 
@@ -8,6 +8,35 @@ class SapMaterial:
         """
         self.__Object = SapObj._Object 
         self.__Model = SapObj._Model
+
+    def AddMaterial(self, name, matType, region, standard, grade):
+        """
+        ---adds a new standard material property to the model---
+        name(str)-the name of the added material
+        matType(int)-the material type number.eMatType_Steel = 1,eMatType_Concrete = 2,eMatType_NoDesign = 3
+                    eMatType_Aluminum = 4,eMatType_ColdFormed = 5,eMatType_Rebar = 6,eMatType_Tendon = 7
+        region(str)-different countries or user ["China","Europe","India","Italy","New Zealand","Russia",
+                    "Spain","United States","Vietnam","User"]
+        standard(str)-the standard name, for China it includes ["GB","JTG","TB","User"]
+        grade(str)-the grade name of the material property, For China steel JTG--["GB/T 714-2008 Q345q",--235--,
+                    --370--,--420--,--460--,--500--,--550--,--620--,--690--]
+                    For China Concrete JTG--["JTG D62-2004 C15",--20--,--25--,--30--,...,--80--]
+        """
+        self.__Model.PropMaterial.AddMaterial(name, matType, region, standard, grade)
+        str_list = grade.split(" ")
+        nameList = standard + "-" + str_list[-1]
+        self.__Model.PropMaterial.ChangeName(nameList, name)
+
+    def SetMaterial(self, matName, matType):
+        """
+        ---This function initializes a material property.---
+        inputs:
+                matName(str)-The name of an existing or new material property
+                matType(int)-This is one of the following items in the eMatType enumeration
+                eMatType_Steel = 1,eMatType_Concrete = 2,eMatType_NoDesign = 3
+                eMatType_Aluminum = 4,eMatType_ColdFormed = 5,eMatType_Rebar = 6,eMatType_Tendon = 7
+        """
+        self.__Model.PropMaterial.SetMaterial(matName, matType)
 
     def SetSSCurve(self,matName,strainList,stressList):
         """
@@ -39,24 +68,6 @@ class SapMaterial:
         self.__Model.PropMaterial.SetWeightAndMass(tendonName, 1,weightPerV)#1 = Weight per unit volume
         self.__Model.PropMaterial.SetMPUniaxial(tendonName,E,temC)
 
-    def AddMaterial(self, name, matType, region, standard, grade):
-        """
-        ---adds a new standard material property to the model---
-        name(str)-the name of the added material
-        matType(int)-the material type number.eMatType_Steel = 1,eMatType_Concrete = 2,eMatType_NoDesign = 3
-                    eMatType_Aluminum = 4,eMatType_ColdFormed = 5,eMatType_Rebar = 6,eMatType_Tendon = 7
-        region(str)-different countries or user ["China","Europe","India","Italy","New Zealand","Russia",
-                    "Spain","United States","Vietnam","User"]
-        standard(str)-the standard name, for China it includes ["GB","JTG","TB","User"]
-        grade(str)-the grade name of the material property, For China steel JTG--["GB/T 714-2008 Q345q",--235--,
-                    --370--,--420--,--460--,--500--,--550--,--620--,--690--]
-                    For China Concrete JTG--["JTG D62-2004 C15",--20--,--25--,--30--,...,--80--]
-        """
-        self.__Model.PropMaterial.AddMaterial(name, matType, region, standard, grade)
-        str_list = grade.split(" ")
-        nameList=standard+"-"+str_list[-1]
-        self.__Model.PropMaterial.ChangeName(nameList,name)
-
     def GetMPIsotropic(self,matName):
         """
         ---get the the mechanical properties for a material with an isotropic directional symmetry type---
@@ -77,17 +88,6 @@ class SapMaterial:
         E,v,tempC,G=isoProperty
         returnMatPro=[weightPerV,massPerV,E,v,tempC,G]
         return returnMatPro
-
-    def SetMaterial(self, matName, matType):
-        """
-        ---This function initializes a material property.---
-        inputs:
-                matName(str)-The name of an existing or new material property
-                matType(int)-This is one of the following items in the eMatType enumeration
-                eMatType_Steel = 1, eMatType_Concrete = 2, eMatType_NoDesign = 3
-                eMatType_Aluminum = 4, eMatType_ColdFormed = 5, eMatType_Rebar = 6, eMatType_Tendon = 7
-        """
-        self.__Model.PropMaterial.SetMaterial(matName, matType)
 
     def SetWeightAndMass(self,matName,weightPerV):
         """
