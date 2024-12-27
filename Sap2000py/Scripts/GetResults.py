@@ -8,7 +8,7 @@ class GetResults:
         self.__Model = Sapobj._Model
         self._Sapobj = Sapobj
 
-    def JointReact_by_Group(self,Name,Dealflag = True):
+    def JointReact_by_Group(self, Name, Dealflag = True):
         """
         Get JointReaction by group and return a np.array:[F1,F2,F3,M1,M2,M3]
         input:
@@ -24,11 +24,11 @@ class GetResults:
         """
         # get result by group name
         GroupElm = 2
-        ret = self._Sapobj.Results.Joint.React(Name,GroupElm)
-        colstart,colend = 6,12
+        ret = self._Sapobj.Results.Joint.React(Name, GroupElm)
+        colstart, colend = 6, 12
         if Dealflag:
-            uniquelist,AbsReaction,MaxReaction,MinReaction = deal_with_item(ret,colstart,colend)
-            return uniquelist,AbsReaction,MaxReaction,MinReaction
+            uniquelist, AbsReaction, MaxReaction, MinReaction = deal_with_item(ret,colstart,colend)
+            return uniquelist, AbsReaction, MaxReaction, MinReaction
         else:
             return ret[1],ret[colstart:colend]
          

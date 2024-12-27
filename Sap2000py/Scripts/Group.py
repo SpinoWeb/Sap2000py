@@ -1,5 +1,6 @@
 
 from typing import Literal
+
 class SapGroup:
     def __init__(self,Sapobj):
         """
@@ -11,9 +12,9 @@ class SapGroup:
 
     def GetGroupNames(self):
         """
-        Get group names,return NameList.
+        Get group names, return NameList.
         """
-        NumberNames, NameList,ret = self.__Model.GroupDef.GetNameList()
+        NumberNames, NameList, ret = self.__Model.GroupDef.GetNameList()
         return NameList
     
     def Select(self,GroupName):
@@ -23,22 +24,23 @@ class SapGroup:
             GroupName(str/list):group name
         """
         # Change type to list
-        if type(GroupName)==str:
+        if type(GroupName) == str:
             GroupName = [GroupName]
 
         nonameflag = False
         for Name in GroupName:
             if Name not in self.GetGroupNames():
-                print('GroupName "{}"dosen\'t exist!'.format(Name))
+                print('GroupName "{}"doesn\'t exist!'.format(Name))
                 nonameflag = True
             else:
-                self.__Model.SelectObj.Group(GroupName)
+                ret = self.__Model.SelectObj.Group(Name)
+                #print("ret: ", ret)
 
         if nonameflag:
             print('You have entered the wrong GroupName, please check in the Caselist below:')
             print(self.GetGroupNames())
 
-    def GetElements(self, GroupName:str):
+    def GetElements(self, GroupName: str):
         """
         Get elements in group
         input:
@@ -60,35 +62,49 @@ class SapGroup:
         ElementList = {}
         for Name in GroupName:
             if Name not in self.GetGroupNames():
-                #print('GroupName "{}"dosen\'t exist!'.format(Name))
+                #print('GroupName "{}"doesn\'t exist!'.format(Name))
                 nonameflag = True
             else:
-                NumberElements, typelist, elementList, ret = self.__Model.GroupDef.GetAssignments(Name)
-                #print(NumberElements, typelist, elementList, ret)
+                """
+                https://docs.csiamerica.com/help-files/etabs-api-2016/html/c55450e0-59ba-3ef8-9d32-a5b1548985fb.htm
+                Function GetAssignments ( 
+                    Name As String,
+                    ByRef NumberItems As Integer,
+                    ByRef ObjectType As Integer(),
+                    ByRef ObjectName As String()
+                ) As Integer
+                """
+                NumberItems, typelist, elementList, ret = self.__Model.GroupDef.GetAssignments(Name)
+                #print("NumberItems, typelist, elementList, ret : ", NumberItems, typelist, elementList, ret)
+                
                 # Change typelist to typestr_list
+                """
                 typestr_list = []
                 for types in typelist:
+                    print("types: ", types)
                     typestr = self._Sapobj.Scripts.lookup(self._Sapobj.ObjDict, types)
+                    ###typestr = self._Sapobj.map(lambda x: x.get(types)).take(2)
                     typestr_list.append(typestr)
                 
                 # combine elementList and typestr_list to a new list
-                newlist = [tstr + ':' + ele for tstr,ele in zip(typestr_list, elementList)]
+                newlist = [tstr + ':' + ele for tstr, ele in zip(typestr_list, elementList)]
                 # update the ElementList
                 ElementList.update(dict.fromkeys(newlist))
+                """
+                ElementList = elementList
 
         if nonameflag:
-            print('You have entered the wrong GroupName, please check in the Caselist below:')
+            print('You have entered the wrong GroupName, please check in the Caselist below: ')
             print(self.GetGroupNames())
         return list(ElementList)
 
-    def AddtoGroup(self, GroupName:str, namelist, type:Literal['Point','Frame','Cable','Tendon','Area','Solid','Link']):
+    def AddtoGroup(self, GroupName: str, namelist, type: Literal['Point','Frame','Cable','Tendon','Area','Solid','Link']):
         """
         Add elements to group
         input:
-            GroupName(str):group name
-            idlist(list):element id list
-            typeStr(str):{'Point':1,'Frame':2,'Cable':3,
-                        'Tendon':4,'Area':5,'Solid':6,'Link':7}
+            GroupName(str): group name
+            namelist(list): element id list
+            typeStr(str): {'Point':1, 'Frame':2, 'Cable':3, 'Tendon':4, 'Area':5, 'Solid':6, 'Link':7}
         """
         #print(GroupName, namelist, type)
 
@@ -97,19 +113,21 @@ class SapGroup:
 
         # check if this group exists
         allgroups = self.GetGroupNames()
+        #print("allgroups : ", allgroups)
         if GroupName not in allgroups:
             SapModel.GroupDef.SetGroup(GroupName)
 
         # Change type to list
-        if isinstance(namelist,str):
+        if isinstance(namelist, str):
             namelist = [namelist]
 
+        #print("namelist : ", namelist)
         for name in namelist:
             ret = eval(f'SapModel.{Objstr}.SetGroupAssign(name, GroupName)')
             if ret != 0:
                 print(f'Add {Objstr}:{name} to group {GroupName} failed!')
 
-    def RemovefromGroup(self,GroupName:str,dellist,typeStr:str):
+    def RemovefromGroup(self, GroupName: str, dellist, typeStr: str):
         """
         Remove elements from group
         input:
@@ -137,5 +155,4 @@ class SapGroup:
             typestr = ele.split(':')[0]
             eleid = ele.split(':')[1]
             self.AddtoGroup(GroupName,eleid,typestr)
-
-        
+      

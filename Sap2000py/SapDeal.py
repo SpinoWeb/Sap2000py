@@ -81,7 +81,7 @@ class SapFile():
         """
         self.__Model.File.NewBlank()
 
-    def Save(self,FileName : Union[Path , str] = Path('.')/"NewSapProj.sdb"):
+    def Save(self, FileName : Union[Path , str] = Path('.')/"NewSapProj.sdb"):
         """
         ---save Sap model file---
         save at savepath\savename
@@ -93,9 +93,9 @@ class SapFile():
         return ret
     
     def New_2DFrame(self,
-                    TempType:Literal["PortalFrame","ConcentricBraced","EccentricBraced"],
-                    NumberStorys,StoryHeight,NumberBays,BayWidth,
-                    Restraint=True,Beam="Default",Column="Default",Brace="Default"):
+                    TempType: Literal["PortalFrame","ConcentricBraced","EccentricBraced"],
+                    NumberStorys, StoryHeight, NumberBays, BayWidth,
+                    Restraint=True, Beam="Default", Column="Default", Brace="Default"):
         """
         ---Do not use this function to add to an existing model. This function should be used only for creating a new
          model and typically would be preceded by calls to ApplicationStart or InitializeNewModel.The function returns

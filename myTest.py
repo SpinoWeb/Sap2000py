@@ -6,6 +6,7 @@ from rich import print
 
 from Sap2000py import Saproject
 
+#FileName = 
 # full path to the model
 ModelPath = Path('.\Test\myTest.sdb')
 
@@ -40,36 +41,66 @@ Sap.setUnits("KN_m_C")
 #Sap.Scripts.AddCommonMaterialSet(standard = "JTG")
 
 # add cartesian joints
-joint_coordinates = np.array([ [0,0,0], [0,0,3], [6,0,3], [6,0,0]])
-Sap.core.add_cartesian_joints(joint_coordinates)
+#joint_coordinates = np.array([ [0,0,0], [0,0,3], [6,0,3], [6,0,0]])
+#Sap.core.add_cartesian_joints(joint_coordinates)
 # You can also Add Joints once a time : Sap.Assign.PointObj.AddCartesian(x=0, y=0, z=0)
 # After using this script to add joints, you can see all the joints in var Sap.coord_joints
-print("joint_coordinates : ", Sap.joint_coordinates)
+#print("joint_coordinates : ", Sap.joint_coordinates)
 
 # add frame elements
-Sap.core.add_frame_by_points([[1,2], [2,3], [3,4]])
-print("connectivity_frame : ", Sap.connectivity_frame)
+#Sap.core.add_frame_by_points([[1,2], [2,3], [3,4]])
+#print("connectivity_frame : ", Sap.connectivity_frame)
 
+# 
+Sap.core.create_3d_frame({"NumberBaysX" : 1, "NumberBaysY" : 1})
+#print("base_points : ", Sap.base_points)
+#print("columns : ", Sap.columns)
+#print("beams_x : ", Sap.beams_x)
+#print("beams_y : ", Sap.beams_y)
+
+#
+"""
+Sap.File.New_2DFrame(
+                    TempType = "EccentricBraced", # "PortalFrame","ConcentricBraced","EccentricBraced"
+                    NumberStorys = 3, StoryHeight = 3, NumberBays = 6, BayWidth = 6,
+                    Restraint = True, Beam="Default", Column="Default", Brace="Default")
+
+Sap.File.New_3DFrame(
+                    TempType = 0, # OpenFrame = 0, PerimeterFrame = 1, BeamSlab = 2, FlatPlate = 3
+                    NumberStorys = 3, StoryHeight = 3, NumberBayX = 4, BayWidthX = 4, NumberBaysY = 3, BayWidthY = 3,
+                    Restraint = True, Beam = "Default", Column = "Default", Area = "Default",
+                    NumberXDivisions = 4, NumberYDivisions = 4)
+"""
+#
+#Sap.File.New_Wall(NumberXDivisions = 10, DivisionWidthX = 1, NumberZDivisions = 10, DivisionWidthZ = 1, Restraint = True, Area = "Default")
+
+#
+#Sap.File.New_SolidBlock(XWidth = 4, YWidth = 3, Height = 3, Restraint = True, Solid = "Default", NumberXDivisions = 4, NumberYDivisions = 3, NumberZDivisions = 3)
+
+#
 Sap.RefreshView(0, False)
 
-# Add elements to your group / add fix external joints
-#Sap.Scripts.Group.AddtoGroup('Edge', ['1','4'], "Point")
+# Add elements to your group
+#Sap.Scripts.Group.RemovefromGroup("base_points", Sap.base_points, "Point")
+Sap.Scripts.Group.AddtoGroup("base_points", Sap.base_points, "Point")
 ###print("Scripts : ", Sap.Scripts)
 # Check Your Group Elements
-#Eledict = Sap.Scripts.Group.GetElements('Edge')
-#print("Eledict : ", Eledict)
+#bpoints = Sap.Scripts.Group.GetElements("base_points")
+###print("bpoints : ", bpoints)
 # Select the group you need
-#Sap.Scripts.Group.Select('Edge')
+#Sap.Scripts.Group.Select("base_points")
 
-# Modal Analysis
+# Save file
+Sap.File.Save(ModelPath)
+
 # Remove all cases for analysis
-#Sap.Scripts.Analyze.RemoveCases("All")
+Sap.Scripts.Analyze.RemoveCases("All")
 # Select cases for analysis
-#Sap.Scripts.Analyze.AddCases(CaseName = ['DEAD', 'MODAL'])
+Sap.Scripts.Analyze.AddCases(CaseName = ["DEAD", "MODAL"])
 # Delete Results
-#Sap.Scripts.Analyze.DeleteResults("All")
+Sap.Scripts.Analyze.DeleteResults("All")
 # Run analysis
-#Sap.Scripts.Analyze.RunAll()
+Sap.Scripts.Analyze.RunAll()
 
 # post process
 # open excel
@@ -87,7 +118,12 @@ Sap.RefreshView(0, False)
 
 # get reactions under deadload 
 # select combo for output
-#Sap.Scripts.SelectCombo_Case(["DEAD"])
+Sap.Scripts.SelectCombo_Case(["DEAD"])
+
+# get Joint reaction result by group name
+Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
+print("Name, AbsReaction: ", Name, AbsReaction)
+print("MaxReaction, MinReaction: ", MaxReaction, MinReaction)
 
 # get Frame force result by group name
 #Name,EleAbsForce,__,__ = Sap.Scripts.GetResults.ElementJointForce_by_Group("PierBottom")
@@ -107,6 +143,7 @@ Sap.RefreshView(0, False)
 
 # Save your file with a Filename(default: your ModelPath)
 #Sap.File.Save()
+Sap.File.Save(ModelPath)
 
 # Don't forget to close the program
-#Sap.closeSap()
+Sap.closeSap()

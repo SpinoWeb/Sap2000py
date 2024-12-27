@@ -1,7 +1,7 @@
 from typing import Literal
 
 class SapSection:
-    def __init__(self,Sapobj):
+    def __init__(self, Sapobj):
         """
         Passing in the parent class object directly is to avoid 
         getting only the last opened SAP2000 window when initializing the 
@@ -12,7 +12,7 @@ class SapSection:
         self._Sapobj = Sapobj
         self.PropLink = PropLink(Sapobj)
 
-    def PropFrame_SetGeneral(self,sectName,matName,t3,t2,Area,As2,As3,I22,I33,J,notes=""):
+    def PropFrame_SetGeneral(self, sectName,matName,t3,t2,Area,As2,As3,I22,I33,J,notes=""):
         """
         ---set a general frame section property---
         intput:
@@ -30,7 +30,7 @@ class SapSection:
         ret = self.__Model.PropFrame.SetGeneral(sectName,matName,t3,t2,Area,As2,As3,J,I22,I33,1,1,1,1,1,1,-1, notes + "\nAdded by Sap2000py")
         return ret
 
-    def PropFrame_SetSD(self,sectName,matName,DesignType=0,Color=-1,Notes="",GUID = ""):
+    def PropFrame_SetSD(self, sectName,matName,DesignType=0,Color=-1,Notes="",GUID = ""):
         """
         ---set a SD(Section Designer) frame section property---
         This function initializes a section designer property.
@@ -50,7 +50,7 @@ class SapSection:
         ret = self.__Model.PropFrame.SetSDSection(sectName, matName, DesignType, Color, Notes, GUID)
         return ret
 
-    def Tendon_SetProp(self,tendonName,matName,modelOpt,Area):
+    def Tendon_SetProp(self, tendonName,matName,modelOpt,Area):
         """
         ---set a tendon property---
         inputs:
@@ -61,7 +61,7 @@ class SapSection:
         """
         self.__Model.PropTendon.SetProp(tendonName,matName,modelOpt,Area)
 
-    def Cable_SetPro(self,cableName,matName,Area):
+    def Cable_SetPro(self, cableName,matName,Area):
         """
         ---set a cable property---
         intputs:
@@ -71,7 +71,7 @@ class SapSection:
         """
         self.__Model.PropCable.SetProp(cableName,matName,Area)
 
-    def Area_SetPlane(self,areaName,MyType,MatProp,Thickness,MatAng=0,Incompatible=True):
+    def Area_SetPlane(self, areaName,MyType,MatProp,Thickness,MatAng=0,Incompatible=True):
         """
         ---This function initializes a plane-type area property. If this function is called for an existing area
         property, all items for the property are reset to their default value.---
@@ -87,7 +87,7 @@ class SapSection:
         """
         self.__Model.PropArea.SetPlane(areaName,MyType,MatProp,MatAng,Thickness,Incompatible)
 
-    def Area_SetShell_1(self,name,ShellType,MatProp,Thickness,matAng=0):
+    def Area_SetShell_1(self, name,ShellType,MatProp,Thickness,matAng=0):
         """
         ---This function initializes a shell-type area property. If this function is called for an existing
         area property, all items for the property are reset to their default value---
@@ -103,7 +103,7 @@ class SapSection:
         """
         self.__Model.PropArea.SetShell_1(name,ShellType,False,MatProp,matAng,Thickness,Thickness)
 
-    def PropSolid_SetProp(self,name,matProp,a=0,b=0,c=0,incompatible=True):
+    def PropSolid_SetProp(self, name,matProp,a=0,b=0,c=0,incompatible=True):
         """
         ---This function defines a solid property---
         inputs:

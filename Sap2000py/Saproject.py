@@ -196,6 +196,16 @@ class SapCore:
 
         add_frame_by_points(self.Sapobj, connectivity_frame)
 
+    def create_3d_frame(self, parameters: dict = {}):
+        """Create a new 2d frame
+
+        Args:
+            parameters: {}
+        """
+        from .core.build import create_3d_frame
+
+        create_3d_frame(self.Sapobj, parameters)
+
 class Saproject(metaclass = SapMeta):
     """SAP2000 project class.
         ```

@@ -235,7 +235,7 @@ class Sap_Double_Box_Pier:
         self.bearing_bottom_point_inner:dict = {}
         self.points:dict = {}
     
-    def generate_pier_points(self,side = Literal['left','right','both']):
+    def generate_pier_points(self, side = Literal['left','right','both']):
         x = self.station
         if side == 'left':
             y = self.Distance_between_piers/2
