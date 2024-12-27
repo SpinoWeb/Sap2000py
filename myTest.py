@@ -82,11 +82,18 @@ Sap.RefreshView(0, False)
 
 # Add elements to your group
 #Sap.Scripts.Group.RemovefromGroup("base_points", Sap.base_points, "Point")
-Sap.Scripts.Group.AddtoGroup("base_points", Sap.base_points, "Point")
-###print("Scripts : ", Sap.Scripts)
-# Check Your Group Elements
-#bpoints = Sap.Scripts.Group.GetElements("base_points")
-###print("bpoints : ", bpoints)
+groups = [
+    {"name": "base_points", "type": "Point"},
+    {"name": "columns", "type": "Frame"},
+    {"name": "beams_x", "type": "Frame"},
+    {"name": "beams_y", "type": "Frame"}
+]
+for g in groups:
+    #print("g: ", g['name'], g)
+    Sap.Scripts.Group.AddtoGroup(g["name"], getattr(Sap, g["name"]), g["type"])
+    items = Sap.Scripts.Group.GetElements(g["name"])
+    #print(f'{g["name"]} : {items}')
+
 # Select the group you need
 #Sap.Scripts.Group.Select("base_points")
 
@@ -121,9 +128,9 @@ Sap.Scripts.Analyze.RunAll()
 Sap.Scripts.SelectCombo_Case(["DEAD"])
 
 # get Joint reaction result by group name
-Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
-print("Name, AbsReaction: ", Name, AbsReaction)
-print("MaxReaction, MinReaction: ", MaxReaction, MinReaction)
+#Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
+#print("Name, AbsReaction: ", Name, AbsReaction)
+#print("MaxReaction, MinReaction: ", MaxReaction, MinReaction)
 
 # get Frame force result by group name
 #Name,EleAbsForce,__,__ = Sap.Scripts.GetResults.ElementJointForce_by_Group("PierBottom")

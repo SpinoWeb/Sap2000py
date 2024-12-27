@@ -204,7 +204,8 @@ class create_3d_frame:
 
         # Define material and section properties
         self.__Model.PropMaterial.SetMaterial("Concrete", 2)
-        self.__Model.PropFrame.SetRectangle("Beam", "Concrete", 0.3, 0.5)
+        self.__Model.PropFrame.SetRectangle("BeamX", "Concrete", 0.3, 0.5)
+        self.__Model.PropFrame.SetRectangle("BeamY", "Concrete", 0.3, 0.4)
         self.__Model.PropFrame.SetRectangle("Column", "Concrete", 0.5, 0.5)
 
         #pi = 0 # points
@@ -234,14 +235,14 @@ class create_3d_frame:
                 x_end = (xi + 1) * BayWidthX
                 for yi in range(NumberBaysY + 1):
                     y_coord = yi * BayWidthY
-                    self.__Model.FrameObj.AddByCoord(x_start, y_coord, z_coord, x_end, y_coord, z_coord, "", "Beam", f"Bx{xi}{yi}{zi}")
+                    self.__Model.FrameObj.AddByCoord(x_start, y_coord, z_coord, x_end, y_coord, z_coord, "", "BeamX", f"Bx{xi}{yi}{zi}")
                     beams_x.append(f"Bx{xi}{yi}{zi}")
             for yi in range(NumberBaysY):
                 y_start = yi * BayWidthY
                 y_end = (yi + 1) * BayWidthY
                 for xi in range(NumberBaysX + 1):
                     x_coord = xi * BayWidthX
-                    self.__Model.FrameObj.AddByCoord(x_coord, y_start, z_coord, x_coord, y_end, z_coord, "", "Beam", f"By{xi}{yi}{zi}")
+                    self.__Model.FrameObj.AddByCoord(x_coord, y_start, z_coord, x_coord, y_end, z_coord, "", "BeamY", f"By{xi}{yi}{zi}")
                     beams_y.append(f"By{xi}{yi}{zi}")
 
         # storing
