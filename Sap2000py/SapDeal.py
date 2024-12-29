@@ -121,7 +121,7 @@ class SapFile():
         DictFrame2DType = {"PortalFrame":0,"ConcentricBraced":1,"EccentricBraced":2}
         self.__Model.File.New2DFrame(DictFrame2DType[TempType],NumberStorys,StoryHeight,NumberBays,BayWidth,Restraint,Beam,Column,Brace)
 
-    def New_Wall(self,NumberXDivisions,DivisionWidthX,NumberZDivisions,DivisionWidthZ,Restraint=True,Area="Default"):
+    def New_Wall(self, NumberXDivisions, DivisionWidthX, NumberZDivisions,DivisionWidthZ,Restraint=True,Area="Default"):
         """
         ---Do not use this function to add to an existing model. This function should be used only for creating a new
         model and typically would be preceded by calls to ApplicationStart or InitializeNewModel.
@@ -137,7 +137,7 @@ class SapFile():
         """
         self.__Model.File.NewWall(NumberXDivisions,DivisionWidthX,NumberZDivisions,DivisionWidthZ,Restraint,Area)
 
-    def New_3DFrame(self,TempType,NumberStorys,StoryHeight,NumberBayX,BayWidthX,NumberBaysY,BayWidthY,
+    def New_3DFrame(self, TempType, NumberStorys, StoryHeight,NumberBayX,BayWidthX,NumberBaysY,BayWidthY,
                         Restraint=True,Beam="Default",Column="Default",Area="Default",NumberXDivisions=4,NumberYDivisions=4):
         """
         ---Do not use this function to add to an existing model. This function should be used only for creating a
@@ -167,7 +167,7 @@ class SapFile():
         self.__Model.File.New3DFrame(TempType,NumberStorys,StoryHeight,NumberBayX,BayWidthX,NumberBaysY,BayWidthY,
                         Restraint,Beam,Column,Area,NumberXDivisions,NumberYDivisions)
 
-    def New_SolidBlock(self,XWidth,YWidth,Height,Restraint=True,Solid="Default",NumberXDivisions=5,
+    def New_SolidBlock(self, XWidth, YWidth, Height, Restraint=True,Solid="Default",NumberXDivisions=5,
                            NumberYDivisions=8,NumberZDivisions=10):
         """
         ---The function returns zero if the new solid block model is successfully created, otherwise it returns a nonzero value---
@@ -233,12 +233,12 @@ class LoadCombo:
         self.__Object = Sapobj._Object 
         self.__Model = Sapobj._Model
 
-    def Add(self,name,comboType:Literal['LinearAdd','Envelope','AbsAdd','SRSS','RangeAdd']):
+    def Add(self, name, comboType:Literal['LinearAdd','Envelope','AbsAdd','SRSS','RangeAdd']):
         """
         ---This function adds a new load combination---
         inputs:
         name(str)-The name of a new load combination.
-        comboType(int)-This is 0, 1, 2, 3 or 4 indicating the load combination type.0 = Linear Additive,
+        comboType(int)-This is 0, 1, 2, 3 or 4 indicating the load combination type. 0 = Linear Additive,
             1 = Envelope,2 = Absolute Additive,3 = SRSS,4 = Range Additive
         """
         typeid = {'LinearAdd':0,'Envelope':1,'AbsAdd':2,'SRSS':3,'RangeAdd':4}[comboType]
@@ -266,7 +266,7 @@ class LoadCombo:
         return ret
 
 class SapDefinitions:
-    def __init__(self,Sapobj):
+    def __init__(self, Sapobj):
         """
         Passing in the parent class object directly is to avoid 
         getting only the last opened SAP2000 window when initializing the 
@@ -285,7 +285,7 @@ class SapDefinitions:
 
 
 class SapAssign:
-    def __init__(self,Sapobj):
+    def __init__(self, Sapobj):
         """
         Passing in the parent class object directly is to avoid 
         getting only the last opened SAP2000 window when initializing the 

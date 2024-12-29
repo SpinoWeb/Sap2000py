@@ -193,36 +193,51 @@ class create_3d_frame:
         BayWidthY = parameters["BayWidthY"] if "BayWidthY" in parameters else 4        
         
         #
-        #points = []
         base_points = []
         columns = []
         beams_x = []
         beams_y = []
 
-        #
-        #delete_all_frames(self.__Model)
-
         # Define material and section properties
         self.__Model.PropMaterial.SetMaterial("Concrete", 2)
-        self.__Model.PropFrame.SetRectangle("BeamX", "Concrete", 0.3, 0.5)
-        self.__Model.PropFrame.SetRectangle("BeamY", "Concrete", 0.3, 0.4)
-        self.__Model.PropFrame.SetRectangle("Column", "Concrete", 0.5, 0.5)
+        self.__Model.PropFrame.SetRectangle("beam_x", "Concrete", 0.3, 0.5)
+        self.__Model.PropFrame.SetRectangle("beam_y", "Concrete", 0.3, 0.4)
+        self.__Model.PropFrame.SetRectangle("column", "Concrete", 0.3, 0.5)
 
-        #pi = 0 # points
+        # loadpatterns
+        SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
+        SapObj.Define.loadpatterns.Add("G2k", myType = 3, SelfWTMultiplier = 0)
+        SapObj.Define.loadpatterns.Add("Q1k", myType = 3, SelfWTMultiplier = 0)
+        #SapObj.Define.loadpatterns.Add("H", myType = 3)
 
-        # Create columns and beams
+        # loadcases
+        #SapObj.Define.loadcases.StaticLinear.SetCase("H")
+
+        # combos
+        comboName = "Fd"
+        SapObj.Define.LoadCombo.Add(comboName, comboType = "LinearAdd")
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType="LoadCase", CName = "G1k", SF = 1.3)
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType="LoadCase", CName = "G2k", SF = 1.5)
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType="LoadCase", CName = "Q1k", SF = 1.5)
+
+        # loads
+        g2 = 3 * BayWidthY
+        q1 = 2 * BayWidthY
+
+        # Create columns and retraints
         for xi in range(NumberBaysX + 1):
             x_coord = xi * BayWidthX
             for yi in range(NumberBaysY + 1):
                 y_coord = yi * BayWidthY
                 for zi in range(NumberStorys):                    
                     z_coord = zi * StoryHeight
-                    self.__Model.FrameObj.AddByCoord(x_coord, y_coord, z_coord, x_coord, y_coord, z_coord + StoryHeight, "", "Column", f"C{xi}{yi}{zi}")
-                    columns.append(f"C{xi}{yi}{zi}")
+                    name = f"column-{xi}{yi}{zi}"
+                    self.__Model.FrameObj.AddByCoord(x_coord, y_coord, z_coord, x_coord, y_coord, z_coord + StoryHeight, "", "column", name)
+                    columns.append(name)
                     if zi == 0:
                         Point1 = ""
                         Point2 = ""
-                        ret = self.__Model.FrameObj.GetPoints(f"C{xi}{yi}{zi}", Point1, Point2)
+                        ret = self.__Model.FrameObj.GetPoints(name, Point1, Point2)
                         #print("ret : ", ret)              
                         self.__Model.PointObj.SetRestraint(ret[0], [True, True, True, True, True, True])
                         base_points.append(ret[0])
@@ -235,15 +250,40 @@ class create_3d_frame:
                 x_end = (xi + 1) * BayWidthX
                 for yi in range(NumberBaysY + 1):
                     y_coord = yi * BayWidthY
-                    self.__Model.FrameObj.AddByCoord(x_start, y_coord, z_coord, x_end, y_coord, z_coord, "", "BeamX", f"Bx{xi}{yi}{zi}")
-                    beams_x.append(f"Bx{xi}{yi}{zi}")
+                    name = f"beam_x-{xi}{yi}{zi}"
+                    self.__Model.FrameObj.AddByCoord(x_start, y_coord, z_coord, x_end, y_coord, z_coord, "", "beam_x", name)
+                    beams_x.append(name)                    
+                    q = g2 / 2 if yi == 0 or yi == NumberBaysY else g2
+                    #print(yi, q)
+                    self.__Model.FrameObj.SetLoadDistributed(name, "G2k", 1, 10, 0, 1, q, q)
+                    q = q1 / 2 if yi == 0 or yi == NumberBaysY else q1
+                    #print(yi, q)
+                    self.__Model.FrameObj.SetLoadDistributed(name, "Q1k", 1, 10, 0, 1, q, q)
+                    """
+                    https://docs.csiamerica.com/help-files/etabs-api-2016/html/9a3832e7-d1eb-a2b6-5f28-679cd0f1cfc2.htm
+                    Function SetLoadDistributed ( 
+                        Name As String,
+                        LoadPat As String,
+                        MyType As Integer, // 1: Force per unit length, 2: Moment per unit length
+                        Dir As Integer, // 10: Gravity direction (only applies when CSys is Global)
+                        Dist1 As Double,
+                        Dist2 As Double,
+                        Val1 As Double,
+                        Val2 As Double,
+                        Optional CSys As String = "Global",
+                        Optional RelDist As Boolean = true,
+                        Optional Replace As Boolean = true,
+                        Optional ItemType As eItemType = eItemType.Objects
+                    ) As Integer
+                    """
             for yi in range(NumberBaysY):
                 y_start = yi * BayWidthY
                 y_end = (yi + 1) * BayWidthY
                 for xi in range(NumberBaysX + 1):
                     x_coord = xi * BayWidthX
-                    self.__Model.FrameObj.AddByCoord(x_coord, y_start, z_coord, x_coord, y_end, z_coord, "", "BeamY", f"By{xi}{yi}{zi}")
-                    beams_y.append(f"By{xi}{yi}{zi}")
+                    name = f"beam_y-{xi}{yi}{zi}"
+                    self.__Model.FrameObj.AddByCoord(x_coord, y_start, z_coord, x_coord, y_end, z_coord, "", "beam_y", name)
+                    beams_y.append(name)
 
         # storing
         SapObj.base_points = base_points
@@ -251,5 +291,12 @@ class create_3d_frame:
         SapObj.beams_x = beams_x
         SapObj.beams_y = beams_y
         
-        print("3d frame created successfully")
-        #return base_points
+        print("3D frame created successfully!")
+        """
+        return [
+            {"name": "base_points", "type": "Point"},
+            {"name": "columns", "type": "Frame"},
+            {"name": "beams_x", "type": "Frame"},
+            {"name": "beams_y", "type": "Frame"}
+        ]
+        """

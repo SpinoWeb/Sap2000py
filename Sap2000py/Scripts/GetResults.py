@@ -32,31 +32,31 @@ class GetResults:
         else:
             return ret[1],ret[colstart:colend]
          
-    def ElementForce_by_Group(self,Name,Dealflag = True):
+    def ElementForce_by_Group(self, Name, Dealflag = True):
         """
-        Get ElementForce by group and return a np.array:[P,V2,V3,T,M2,M3]
+        Get ElementForce by group and return a np.array: [P, V2, V3, T, M2, M3]
         input:
-            Name(str):the Group's name you want to extract
+            Name(str): the Group's name you want to extract
             Dealflag(bool):
                 if Dealflag = True, get the max absolute value of each item
                 if Dealflag = False, return everything we got
         output:
-        Namelist(list):Item Name List with order
-        AbsReaction(ndarray):results in np.array:[P,V2,V3,T,M2,M3]
-        MaxReaction(ndarray):results in np.array:[P,V2,V3,T,M2,M3]
-        MinReaction(ndarray):results in np.array:[P,V2,V3,T,M2,M3]
+            Namelist(list): Item Name List with order
+            AbsReaction(ndarray): results in np.array: [P, V2, V3, T, M2, M3]
+            MaxReaction(ndarray): results in np.array: [P, V2, V3, T, M2, M3]
+            MinReaction(ndarray): results in np.array: [P, V2, V3, T, M2, M3]
         """
         # get result by group name
         GroupElm = 2
-        ret = self._Sapobj.Results.FrameForce(Name,GroupElm)
-        colstart,colend = 8,14
+        ret = self._Sapobj.Results.Frame.Force(Name, GroupElm)
+        colstart, colend = 8, 14
         if Dealflag:
-            uniquelist,AbsReaction,MaxReaction,MinReaction = deal_with_item(ret,colstart,colend)
-            return uniquelist,AbsReaction,MaxReaction,MinReaction
+            uniquelist, AbsReaction, MaxReaction, MinReaction = deal_with_item(ret, colstart, colend)
+            return uniquelist, AbsReaction, MaxReaction, MinReaction
         else:
-            return ret[1],ret[colstart:colend]
+            return ret[1], ret[colstart:colend]
     
-    def ElementJointForce_by_Group(self,Name,Dealflag = True):
+    def ElementJointForce_by_Group(self, Name, Dealflag = True):
         """
         Get ElementJointForce by group and return a np.array:[F1,F2,F3,M1,M2,M3]
         input:
@@ -72,13 +72,13 @@ class GetResults:
         """
         # get result by group name
         GroupElm = 2
-        ret = self._Sapobj.Results.Frame.JointForce(Name,GroupElm)
-        colstart,colend = 7,13
+        ret = self._Sapobj.Results.Frame.JointForce(Name, GroupElm)
+        colstart, colend = 7, 13
         if Dealflag:
-            uniquelist,AbsReaction,MaxReaction,MinReaction = deal_with_item(ret,colstart,colend)
+            uniquelist, AbsReaction, MaxReaction, MinReaction = deal_with_item(ret,colstart,colend)
             return uniquelist,AbsReaction,MaxReaction,MinReaction
         else:
-            return ret[1],ret[colstart:colend]
+            return ret[1], ret[colstart:colend]
 
     def LinkForce_by_Group(self,Name,Dealflag = True):
         """

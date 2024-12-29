@@ -339,11 +339,11 @@ pier_hollow_bottom_names = [pier.name+"_left_hollow_1" for pier in girdermain.pi
 Sap.Scripts.Group.AddtoGroup('PierHollowBottom',pier_hollow_bottom_names,type='Frame')
 
 bearing_names = [girdermain.bearings[pier.name]['left']['inner'].name for pier in girdermain.pierlist]
-Sap.Scripts.Group.AddtoGroup('Bearing',bearing_names,type='Link')
+Sap.Scripts.Group.AddtoGroup('Bearing', bearing_names,type='Link')
 
 # set Modal analysis
 Sap.Define.loadcases.ModalEigen.SetInitialCase('DEAD')
-Sap.Define.loadcases.ModalEigen.SetNumberModes('MODAL',MaxModes=500)
+Sap.Define.loadcases.ModalEigen.SetNumberModes('MODAL', MaxModes=500)
 # Remove all cases for analysis
 Sap.Scripts.Analyze.RemoveCases("All")
 # Select cases for analysis

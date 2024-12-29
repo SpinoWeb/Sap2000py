@@ -10,7 +10,7 @@ class SapLoadPatterns:
         self.__Object = Sapobj._Object 
         self.__Model = Sapobj._Model
         
-    def Add(self,name,myType,SelfWTMultiplier=0,AddLoadCase=True):
+    def Add(self, name, myType, SelfWTMultiplier = 0, AddLoadCase = True):
         """
         ---This function adds a new load pattern---
         inputs:
@@ -28,10 +28,10 @@ class SapLoadPatterns:
         SelfWTMultiplier(float)-The self weight multiplier for the new load pattern.
         AddLoadCase(bool)-If this item is True, a linear static load case corresponding to the new load pattern is added.
         """
-        self.__Model.LoadPatterns.Add(name,myType,SelfWTMultiplier,AddLoadCase)
+        self.__Model.LoadPatterns.Add(name, myType, SelfWTMultiplier, AddLoadCase)
 
 class load_StaticLinear:
-    def __init__(self,Sapobj):
+    def __init__(self, Sapobj):
         """
         Passing in the parent class object directly is to avoid 
         getting only the last opened SAP2000 window when initializing the 
@@ -40,7 +40,7 @@ class load_StaticLinear:
         self.__Object = Sapobj._Object 
         self.__Model = Sapobj._Model
 
-    def SetCase(self,name):
+    def SetCase(self, name):
         """
         ---This function initializes a static linear load case---
         inputs:
@@ -48,33 +48,33 @@ class load_StaticLinear:
         """
         self.__Model.LoadCases.StaticLinear.SetCase(name)
 
-    def SetInitialCase(self,name,initialCase=None):
+    def SetInitialCase(self, name, initialCase=None):
         """
-        ---This function sets the initial condition for the specified load case---
+        --- This function sets the initial condition for the specified load case ---
         inputs:
-        name(str)-The name of an existing static linear load case.
-        initialCase-This is blank, None or the name of an existing analysis case. This item specifies if the
-            load case starts from zero initial conditions, that is, an unstressed state, or if it starts using
-            the stiffness that occurs at the end of a nonlinear static or nonlinear direct integration time
-            history load case.
+            name(str)-The name of an existing static linear load case.
+            initialCase-This is blank, None or the name of an existing analysis case. This item specifies if the
+                load case starts from zero initial conditions, that is, an unstressed state, or if it starts using
+                the stiffness that occurs at the end of a nonlinear static or nonlinear direct integration time
+                history load case.
         """
-        self.__Model.LoadCases.StaticLinear.SetInitialCase(name,initialCase)
+        self.__Model.LoadCases.StaticLinear.SetInitialCase(name, initialCase)
 
-    def SetLoads(self,name,numberLoads,loadType,loadName,scaleFactor):
+    def SetLoads(self, name, numberLoads, loadType, loadName, scaleFactor):
         """
-        ---This function sets the load data for the specified analysis case.---
+        --- This function sets the load data for the specified analysis case. ---
         inputs:
-        name(str)-The name of an existing static linear load case.
-        numberLoads(int)-The number of loads assigned to the specified analysis case.
-        loadType(str list)-This is a list that includes either Load or Accel, indicating the type of each
-            load assigned to the load case.
-        loadName(str list)-This is a list that includes the name of each load assigned to the load case.
-            If the LoadType item is Load, this item is the name of a defined load pattern.
-            If the LoadType item is Accel, this item is UX, UY, UZ, RX, RY or RZ, indicating the direction of the load.
-        scaleFactor(float list)-This is a list that includes the scale factor of each load assigned to the load case.
-            [L/s2] for Accel UX UY and UZ; otherwise unitless
+            name(str)-The name of an existing static linear load case.
+            numberLoads(int)-The number of loads assigned to the specified analysis case.
+            loadType(str list)-This is a list that includes either Load or Accel, indicating the type of each
+                load assigned to the load case.
+            loadName(str list)-This is a list that includes the name of each load assigned to the load case.
+                If the LoadType item is Load, this item is the name of a defined load pattern.
+                If the LoadType item is Accel, this item is UX, UY, UZ, RX, RY or RZ, indicating the direction of the load.
+            scaleFactor(float list)-This is a list that includes the scale factor of each load assigned to the load case.
+                [L / s2] for Accel UX UY and UZ; otherwise unitless
         """
-        self.__Model.LoadCases.StaticLinear.SetLoads(name,numberLoads,loadType,loadName,scaleFactor)
+        self.__Model.LoadCases.StaticLinear.SetLoads(name, numberLoads, loadType, loadName, scaleFactor)
 
 class load_StaticLinearMultistep:
     def __init__(self,Sapobj):

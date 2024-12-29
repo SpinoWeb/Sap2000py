@@ -142,7 +142,7 @@ class SapScripts:
         m, n = dataArray.shape
         for i in range(m):
             for j in range(n):
-                WorkSheet.cell(rownum + i, colnum + j, value=dataArray[i, j])
+                WorkSheet.cell(rownum + i, colnum + j, value = dataArray[i, j])
 
 class SapCore:
     """SAP2000 core class.
@@ -197,7 +197,7 @@ class SapCore:
         add_frame_by_points(self.Sapobj, connectivity_frame)
 
     def create_3d_frame(self, parameters: dict = {}):
-        """Create a new 2d frame
+        """Create a new 3d frame
 
         Args:
             parameters: {}
