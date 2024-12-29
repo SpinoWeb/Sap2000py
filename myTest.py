@@ -104,21 +104,24 @@ Sap.File.Save(ModelPath)
 # Remove all cases for analysis
 Sap.Scripts.Analyze.RemoveCases("All")
 # Select cases for analysis
-Sap.Scripts.Analyze.AddCases(CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k"])
+Sap.Scripts.Analyze.AddCases(CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k", "H"])
 # Delete Results
 Sap.Scripts.Analyze.DeleteResults("All")
 # Run analysis
 Sap.Scripts.Analyze.RunAll()
 
-# post processing > xlsx
-FileName = Path(".\Test\\" + ProjectName + ".xlsx")
+#print(dir(Sap.Results))
+#print(dir(Sap.Results.Frame)) # = [Force, JointForce, ...]
 
-# open excel
+# init a workbook
 wb = openpyxl.Workbook()
 
 # select combo for output
 comboName = "Fd"
 Sap.Scripts.SelectCombo_Case([comboName])
+
+# post processing > xlsx
+FileName = Path(".\Test\\" + ProjectName + "_" + comboName + ".xlsx")
 
 # get Joint reaction result by group name
 Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
@@ -151,14 +154,31 @@ for g in frames:
     """
 
     # get Frame force result by group name
-    Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.ElementForce_by_Group(name)
+    ret = Sap.Results.Frame.Force(name, ItemTypeElm = 2)
+    ws = wb.create_sheet(f"{comboName}-{name}-forces") # insert at the end (default)
+    headers = ["Obj", "ObjSta", "Elm", "ElmSta", "LoadCase", "StepType", "StepNum", "P", "V2", "V3", "T", "M2", "M3"]
+    #print(len(headers) + 1)
+    Sap.Scripts.writecell(ws, np.array([headers]), "A1" )
+    Sap.Scripts.writecell(ws, np.transpose(np.array(ret[1 : len(headers) + 1])), "A2" )
+    
+    #Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.ElementForce_by_Group(name)
     #print("Name, AbsReaction: ", Name, AbsReaction)
     #print("MaxReaction, MinReaction: ", MaxReaction, MinReaction)
+    """
     ws = wb.create_sheet(f"{comboName}-{name}-frameforces") # insert at the end (default)
     Sap.Scripts.writecell(ws, np.array([["P", "V2", "V3", "T", "M2", "M3"]]), "B1" )
     Sap.Scripts.writecell(ws, AbsReaction[: , [0, 1, 2, 3, 4, 5] ], "B2" )
     for i, v in enumerate(Name):
         ws[f"A{i + 2}"].value = v
+    """
+
+    # get joint disp result by group name
+    ret = Sap.Results.Joint.Displ(name, ItemTypeElm = 2)
+    ws = wb.create_sheet(f"{comboName}-{name}-displ") # insert at the end (default)
+    headers = ["Obj", "Elm", "LoadCase", "StepType", "StepNum", "U1", "U2", "U3", "R1", "R2", "R3"]
+    #print(len(headers) + 1)
+    Sap.Scripts.writecell(ws, np.array([headers]), "A1" )
+    Sap.Scripts.writecell(ws, np.transpose(np.array(ret[1 : len(headers) + 1])), "A2" )
 
 # get reactions under earthquake time history
 # select combo for output
@@ -176,4 +196,4 @@ wb.save(FileName)
 Sap.File.Save(ModelPath)
 
 # Don't forget to close the program
-#Sap.closeSap()
+Sap.closeSap()

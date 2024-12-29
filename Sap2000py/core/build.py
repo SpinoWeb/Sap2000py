@@ -198,17 +198,89 @@ class create_3d_frame:
         beams_x = []
         beams_y = []
 
-        # Define material and section properties
-        self.__Model.PropMaterial.SetMaterial("Concrete", 2)
-        self.__Model.PropFrame.SetRectangle("beam_x", "Concrete", 0.3, 0.5)
-        self.__Model.PropFrame.SetRectangle("beam_y", "Concrete", 0.3, 0.4)
-        self.__Model.PropFrame.SetRectangle("column", "Concrete", 0.3, 0.5)
+        # Define material properties
+        C2530 = "C25/30"
+        self.__Model.PropMaterial.SetMaterial(C2530, 2)
+        self.__Model.PropMaterial.SetOConcrete(C2530, 
+                                               Fc = 25e3, 
+                                               IsLightweight = False, 
+                                               FcsFactor = 0,
+                                               SSType = 1,
+                                               SSHysType = 2,
+                                               StrainAtFc = 2e-3, 
+                                               StrainUltimate = 3.5e-3                                               
+                                            )
+        """
+        Function SetOConcrete ( 
+            Name As String,
+            Fc As Double,
+            IsLightweight As Boolean,
+            FcsFactor As Double,
+            SSType As Integer,
+            SSHysType As Integer,
+            StrainAtFc As Double,
+            StrainUltimate As Double,
+            Optional FrictionAngle As Double = 0,
+            Optional DilatationalAngle As Double = 0,
+            Optional Temp As Double = 0
+        ) As Integer
+        """
+
+        # Define section properties
+        #self.__Model.PropFrame.SetRectangle("column", C2530, 0.3, 0.5)
+        self.__Model.PropFrame.SetCircle("column", C2530, 0.5)
+        """
+        Function SetCircle ( 
+            Name As String,
+            MatProp As String,
+            T3 As Double,
+            Optional Color As Integer = -1,
+            Optional Notes As String = "",
+            Optional GUID As String = ""
+        ) As Integer
+        """        
+        
+        #self.__Model.PropFrame.SetRectangle("beam_x", C2530, 0.3, 0.5)
+        self.__Model.PropFrame.SetTee("beam_x", C2530, 0.5, 0.5, 0.1, 0.1)
+        """
+        Function SetTee ( 
+            Name As String,
+            MatProp As String,
+            T3 As Double,
+            T2 As Double,
+            Tf As Double,
+            Tw As Double,
+            Optional Color As Integer = -1,
+            Optional Notes As String = "",
+            Optional GUID As String = ""
+        ) As Integer
+        """
+
+        #self.__Model.PropFrame.SetRectangle("beam_y", C2530, 0.3, 0.4)
+        self.__Model.PropFrame.SetSDSection("beam_y", C2530)
+        """
+        Function SetSDSection ( 
+            Name As String,
+            MatProp As String,
+            Optional DesignType As Integer = 0,
+            Optional Color As Integer = -1,
+            Optional Notes As String = "",
+            Optional GUID As String = ""
+        ) As Integer
+        """
+
+        #add polygon shape to new property
+        NumberPoints = 8
+        x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
+        y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
+        r = [0, 0, 0, 0, 0, 0, 0, 0]
+        ret = self.__Model.PropFrame.SDShape.SetPolygon("beam_y", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
 
         # loadpatterns
         SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
-        SapObj.Define.loadpatterns.Add("G2k", myType = 3, SelfWTMultiplier = 0)
-        SapObj.Define.loadpatterns.Add("Q1k", myType = 3, SelfWTMultiplier = 0)
-        #SapObj.Define.loadpatterns.Add("H", myType = 3)
+        SapObj.Define.loadpatterns.Add("G2k", myType = 3)
+        SapObj.Define.loadpatterns.Add("Q1k", myType = 3)
+        SapObj.Define.loadpatterns.Add("H", myType = 3)
 
         # loadcases
         #SapObj.Define.loadcases.StaticLinear.SetCase("H")
@@ -241,6 +313,12 @@ class create_3d_frame:
                         #print("ret : ", ret)              
                         self.__Model.PointObj.SetRestraint(ret[0], [True, True, True, True, True, True])
                         base_points.append(ret[0])
+                        
+                        # displ
+                        #self.__Model.PointObj.SetRestraint(ret[1], [True, False, False, False, False, False])
+                        #self.__Model.PointObj.SetLoadDispl(ret[1], "H", [0.01, 0, 0, 0, 0, 0]) # GLOBAL
+                        # force
+                        self.__Model.PointObj.SetLoadForce(ret[1], "H", [100, 0, 0, 0, 0, 0]) # GLOBAL
 
         # Create beams
         for zi in range(1, NumberStorys + 1):

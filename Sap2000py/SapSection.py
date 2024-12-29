@@ -30,7 +30,7 @@ class SapSection:
         ret = self.__Model.PropFrame.SetGeneral(sectName,matName,t3,t2,Area,As2,As3,J,I22,I33,1,1,1,1,1,1,-1, notes + "\nAdded by Sap2000py")
         return ret
 
-    def PropFrame_SetSD(self, sectName,matName,DesignType=0,Color=-1,Notes="",GUID = ""):
+    def PropFrame_SetSD(self, sectName, matName ,DesignType=0, Color=-1, Notes="", GUID = ""):
         """
         ---set a SD(Section Designer) frame section property---
         This function initializes a section designer property.

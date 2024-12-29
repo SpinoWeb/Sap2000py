@@ -1,6 +1,6 @@
 import numpy as np
 class GetResults:
-    def __init__(self,Sapobj):
+    def __init__(self, Sapobj):
         """
         Get Results from Sap easily, you just need to relax
         """
@@ -153,24 +153,24 @@ class GetResults:
             return ret[1],ret[colstart:colend]
 
 
-def deal_with_item(results,colstart,colend):
-    reaction = np.transpose(np.array(results[colstart:colend]))
-    # get all item in the out put
+def deal_with_item(results, colstart, colend):
+    reaction = np.transpose(np.array(results[colstart : colend]))
+    # get all item in the output
     itemtext = results[1]
     # Get Item Name List with order
     uniquelist = sorted(list(set(itemtext)))
     # find duplicates
     indexdict = find_duplicates(itemtext)
-    MaxReaction = np.zeros((len(uniquelist),reaction.shape[1]))
-    MinReaction = np.zeros((len(uniquelist),reaction.shape[1]))
-    AbsReaction = np.zeros((len(uniquelist),reaction.shape[1]))
+    MaxReaction = np.zeros((len(uniquelist), reaction.shape[1]))
+    MinReaction = np.zeros((len(uniquelist), reaction.shape[1]))
+    AbsReaction = np.zeros((len(uniquelist), reaction.shape[1]))
     for item in uniquelist:
         num = uniquelist.index(item)
-        itemreaction = reaction[indexdict[item],:]
-        MaxReaction[num,:] = np.max(itemreaction,0)
-        MinReaction[num,:] = np.min(itemreaction,0)
-        AbsReaction[num,:] = np.max(np.fabs(itemreaction),0)
-    return uniquelist,AbsReaction,MaxReaction,MinReaction
+        itemreaction = reaction[indexdict[item] , : ]
+        MaxReaction[num , :] = np.max(itemreaction,0)
+        MinReaction[num , :] = np.min(itemreaction,0)
+        AbsReaction[num , :] = np.max(np.fabs(itemreaction),0)
+    return uniquelist, AbsReaction, MaxReaction, MinReaction
 
 
 
