@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 #from Sap2000py.SapSection import SapSection
 
@@ -179,6 +180,7 @@ class create_2d_frame:
 class create_3d_frame:
     # Creating a 3d frame
     def  __init__(self, SapObj, parameters : dict = {}):
+
         #print("create_3d_frame > parameters : ", parameters)
         
         self.__Object = SapObj._Object
@@ -378,3 +380,568 @@ class create_3d_frame:
             {"name": "beams_y", "type": "Frame"}
         ]
         """
+
+class create_grid:
+    # Creating a grid
+    def __init__(self, SapObj, parameters : dict = {}):
+
+        #print("create_grid > parameters : ", parameters)
+        
+        self.__Object = SapObj._Object
+        self.__Model = SapObj._Model
+
+        # Define material properties
+        C2530 = "C25/30"
+        self.__Model.PropMaterial.SetMaterial(C2530, 2)
+        self.__Model.PropMaterial.SetOConcrete(C2530, 
+                                               Fc = 25e3, 
+                                               IsLightweight = False, 
+                                               FcsFactor = 0,
+                                               SSType = 1,
+                                               SSHysType = 2,
+                                               StrainAtFc = 2e-3, 
+                                               StrainUltimate = 3.5e-3                                               
+                                            )
+
+        # Define section properties        
+        self.__Model.PropFrame.SetSDSection("girder", C2530)
+
+        #add polygon shape to new property
+        NumberPoints = 8
+        x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
+        y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
+        r = [0, 0, 0, 0, 0, 0, 0, 0]
+        ret = self.__Model.PropFrame.SDShape.SetPolygon("girder", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
+
+        #self.__Model.PropFrame.SetRectangle("crossbeam", C2530, 0.3, 0.5)
+        self.__Model.PropFrame.SetTee("crossbeam", C2530, 0.5, 0.5, 0.1, 0.1)
+
+        # parameters
+        Grid = parameters["Grid"] if "Grid" in parameters else {
+                "GUID": "grd01",
+                "GridName": "G01",
+                "GridAngle": 0,
+                "GirdersNumber": 5,
+                "GirdersSpacing": 1.5,
+                "Girder": 1,
+                "LdX": 4,
+                "ShowJointsText": False,
+                "ShowBeamsText": False,
+                "ShowShellsText": False,                
+                "E1": 31e06,
+                "I33": 3125e-06,
+                "E1I33": 96875, # 31 * 3125
+                "GridModelType": "FEM"
+            }    
+        
+        GridFields = parameters["GridFields"] if "GridFields" in parameters else [
+            {
+                "GridGUID": "grd01",
+                "GridFieldGUID": "gfd01",
+                "GridFieldName": "Left",
+                "GirdersLength": 2.750,
+                "GirdersSection": "girder",
+                "CrossbeamsSection": "crossbeam",
+                "CrossbeamsNumber": 2,
+                "GridFieldSelected": False
+            },
+            {
+                "GridGUID": "grd01",
+                "GridFieldGUID": "gfd02",
+                "GridFieldName": "Center",
+                "GirdersLength": 26,
+                "GirdersSection": "girder",
+                "CrossbeamsSection": "crossbeam",
+                "CrossbeamsNumber": 6,
+                "GridFieldSelected": False
+            },
+            {
+                "GridGUID": "grd01",
+                "GridFieldGUID": "gfd03",
+                "GridFieldName": "Right",
+                "GirdersLength": 2.750,
+                "GirdersSection": "girder",
+                "CrossbeamsSection": "crossbeam",
+                "CrossbeamsNumber": 2,
+                "GridFieldSelected": False
+            }
+        ]
+        #print("GridFields: ", GridFields)
+
+        Trucks = parameters["Trucks"] if "Trucks" in parameters else [
+            {
+                "GUID": "tck01",
+                "TruckName": "T12",
+                "ShowAxesText": False,
+                "Width": 2,
+                "Length": 6
+            }
+        ]
+        #print("Trucks: ", Trucks)
+
+        Axes = parameters["Axes"] if "Axes" in parameters else [
+            {
+                "TruckGUID": "tck01",
+                "AxisGUID": "3bf57ed5",
+                "AxisName": "New Axis",
+                "x": 1,
+                "dy": .2,
+                "AxisSelected": True,
+                "P": 100,
+                "x1": 1,
+                "y1": 0,
+                "x2": 1,
+                "y2": 2,
+                "stroke": "FF8282"
+            },
+            {
+                "TruckGUID": "tck01",
+                "AxisGUID": "3bf57ed6",
+                "AxisName": "New Axis",
+                "x": 2,
+                "dy": .200,
+                "AxisSelected": True,
+                "P": 100,
+                "x1": 2,
+                "y1": 0,
+                "x2": 2,
+                "y2": 2,
+                "stroke": "FF8282"
+            },
+            {
+                "TruckGUID": "tck01",
+                "AxisGUID": "3bf57ed7",
+                "AxisName": "New Axis",
+                "x": 4,
+                "dy": .200,
+                "AxisSelected": True,
+                "P": 100,
+                "x1": 4,
+                "y1": 0,
+                "x2": 4,
+                "y2": 2,
+                "stroke": "FF8282"
+            },
+            {
+                "TruckGUID": "tck01",
+                "AxisGUID": "3bf57ed8",
+                "AxisName": "New Axis",
+                "x": 5,
+                "dy": .200,
+                "AxisSelected": True,
+                "P": 100,
+                "x1": 5,
+                "y1": 0,
+                "x2": 5,
+                "y2": 2,
+                "stroke": "FF8282"
+            }
+        ]
+
+        Scenarios = parameters["Scenarios"] if "Scenarios" in parameters else [
+            {
+                "GridGUID": "grd01",
+                "ScenarioGUID": "scn01",
+                "ScenarioName": "Scenario 01",
+                "ScenarioTrucks": [
+                    {
+                        "TruckGUID": "tck01",
+                        "x": 2,
+                        "y": 2
+                    },
+                    {
+                        "TruckGUID": "tck01",
+                        "x": 13,
+                        "y": 2
+                    }
+                ]
+            }
+        ]
+
+        #
+        base_points = []
+        girders = []
+        crossbeams = []
+
+        # loadpatterns
+        SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
+        SapObj.Define.loadpatterns.Add("G2k", myType = 3)
+        SapObj.Define.loadpatterns.Add("Q1k", myType = 3)
+        SapObj.Define.loadpatterns.Add("H", myType = 3)
+
+        # loadcases
+        #SapObj.Define.loadcases.StaticLinear.SetCase("H")
+
+        # combos
+        comboName = "Fd"
+        SapObj.Define.LoadCombo.Add(comboName, comboType = "LinearAdd")
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "G1k", SF = 1.3)
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "G2k", SF = 1.5)
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "Q1k", SF = 1.5)
+
+        # loads
+
+        # generate model
+        widthOfTheGrid = self.__widthOfTheGrid(Grid)        
+        lengthOfTheGrid = self.__lengthOfTheGrid(GridFields)
+        XiList = self.__XiList(Grid, GridFields)
+        #print(widthOfTheGrid, lengthOfTheGrid, XiList)
+
+        ScenariosList = [Scenario for Scenario in Scenarios if Scenario['GridGUID'] == Grid['GUID']]
+        #print("ScenariosList: ", ScenariosList)
+
+        ActiveTrucksList = self.__ActiveTrucksList(ScenariosList, Trucks, Axes)
+        #print("ActiveTrucksList: ", ActiveTrucksList)
+
+        Elements = self.__GetElements(Grid, GridFields, ActiveTrucksList)
+        #print("Elements: ", Elements)
+        
+        # storing
+        SapObj.base_points = base_points
+        SapObj.girders = girders
+        SapObj.crossbeams = crossbeams
+        
+        print("Grid created successfully!")
+        """
+        return [
+            {"name": "base_points", "type": "Point"},
+            {"name": "girders", "type": "Frame"},
+            {"name": "crossbeams", "type": "Frame"}
+        ]
+        """
+    
+    # width Of the grid
+    @staticmethod
+    def __widthOfTheGrid(Grid = {}):   
+
+        GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
+        GirdersSpacing = Grid["GirdersSpacing"] if "GirdersSpacing" in Grid else 1
+        GridAngle = Grid["GridAngle"] if "GridAngle" in Grid else 0
+        # GridAngleRad = (GridAngle * np.pi) / 180;
+
+        return (GirdersNumber - 1) * GirdersSpacing
+    
+    # length of the grid
+    @staticmethod
+    def __lengthOfTheGrid(GridFields = []):
+
+        if len(GridFields) < 1:
+            return 1
+
+        lengthOfTheGrid = 0
+
+        for GridField in GridFields:
+            #print(GridField)
+            GirdersLength = GridField["GirdersLength"] if "GirdersLength" in GridField else 0
+
+            lengthOfTheGrid = lengthOfTheGrid + GirdersLength
+
+        return lengthOfTheGrid
+    
+    #abscissa coordinates
+    #@staticmethod
+    def __XiList(self, Grid = {}, GridFields = []):
+        
+        if len(GridFields) < 1:
+            return []
+
+        LdX = Grid["LdX"] if "LdX" in Grid else 1
+        lengthOfTheGrid = self.__lengthOfTheGrid(GridFields)
+
+        XiList = []
+        dX = lengthOfTheGrid / LdX
+        X = 0
+
+        while X <= lengthOfTheGrid:
+            XiList.append(X)
+            X = X + dX    
+
+        return XiList
+
+    # Active Trucks List
+    def __ActiveTrucksList(self, ScenariosList = [], Trucks = [], Axes = []):
+        #print("Trucks: ", Trucks)
+
+        ActiveTrucksList = []
+        
+        for Scenario in ScenariosList:
+            #print(Scenarios)
+            ScenarioTrucks = Scenario["ScenarioTrucks"] if "ScenarioTrucks" in Scenario else []
+            #print(ScenarioTrucks)
+
+            # get Loads
+            for ScenarioTruck in ScenarioTrucks:
+
+                TruckGUID = ScenarioTruck["TruckGUID"] if "TruckGUID" in ScenarioTruck else ""
+                x = ScenarioTruck["x"] if "x" in ScenarioTruck else 0
+                y = ScenarioTruck["y"] if "y" in ScenarioTruck else y
+                #print(TruckGUID, x, y)
+
+                #Truck = [i for i in Trucks if i['GUID'] == TruckGUID]
+                #print("Truck: ", Truck)
+
+                for Truck in Trucks:                    
+                    if Truck['GUID'] == TruckGUID:
+                        #print("Truck: ", Truck)
+                        break
+                    else:
+                        None
+                
+                Width = Truck["Width"] if "Width" in Truck else 0
+                AxesList = [i for i in Axes if i['TruckGUID'] == TruckGUID]
+                #print("AxesList: ", AxesList)
+
+                for Axis in AxesList:
+                    ActiveTrucksList.append({
+                        "ScenarioName": Scenario['ScenarioName'],
+                        "X": x + Axis['x'],
+                        "Y": y - Axis['dy'],
+                        "P": Axis['P'],
+                    })
+                    ActiveTrucksList.append({
+                        "ScenarioName": Scenario['ScenarioName'],
+                        "X": x + Axis['x'],
+                        "Y": y - Width + Axis['dy'],
+                        "P": Axis['P'],
+                    })                
+        
+        return ActiveTrucksList
+    
+    # Get Elements
+    def __GetElements(self, Grid = {}, GridFields = [], LoadsList = []):
+        #print("LoadsList: ", LoadsList)
+
+        if len(GridFields) < 1:
+            return []
+        
+        GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
+        GirdersSpacing = Grid["GirdersSpacing"] if "GirdersSpacing" in Grid else 1
+        GridAngle = Grid["GridAngle"] if "GridAngle" in Grid else 0
+        GridModelType = Grid["GridModelType"] if "GridModelType" in Grid else "FEM"
+        
+        GridAngleRad = math.radians(GridAngle) # (GridAngle * np.pi) / 180
+        widthOfTheGrid = self.__widthOfTheGrid(Grid)
+
+        # init
+        Elements = []
+        yList  = np.array([])
+        xList = np.array([])
+
+        # y
+        for i in range(GirdersNumber):
+            yList = np.append(yList, i * GirdersSpacing)
+        np.sort(yList) 
+        #print("yList: ", yList)
+
+        yListWithLoads = yList
+        #print("yListWithLoads: ", yListWithLoads)
+        if GridModelType == "FEM":          
+            yListWithLoads = np.concatenate(
+                (yListWithLoads, 
+                 np.array([-GirdersSpacing / 2, widthOfTheGrid + GirdersSpacing / 2]), # add half spacing on the two sides
+                 np.array([i['Y'] for i in LoadsList]) # with Y of loads
+                )
+            )
+        
+        #print("yListWithLoads: ", yListWithLoads)
+        yListWithLoads = np.unique(yListWithLoads) # remove duplicates, sort
+        #print("yListWithLoads: ", yListWithLoads)
+
+        x = 0
+        xl = 0
+        GridFieldsLimits = np.zeros(shape = (0, 2))
+        #print("GridFieldsLimits: ", GridFieldsLimits)
+        GirdersSectionsList = []
+        CrossbeamsSectionsList = []        
+
+        xList = np.append(xList, x)
+        #print("xList: ", xList)
+
+        #
+        # GridFields
+        #
+
+        for GridField in GridFields:
+            CrossbeamsNumber = GridField["CrossbeamsNumber"] if "CrossbeamsNumber" in GridField else 1
+            CrossbeamsSection = GridField["CrossbeamsSection"] if "CrossbeamsSection" in GridField else None
+            GirdersLength = GridField["GirdersLength"] if "GirdersLength" in GridField else 1
+            GirdersSection = GridField["GirdersSection"] if "GirdersSection" in GridField else ""
+
+            spacing = GirdersLength / CrossbeamsNumber
+
+            for i in range(CrossbeamsNumber + 1):
+                xList = np.append(xList, x + i * spacing)
+            #print("xList: ", xList)
+
+            x = xList[- 1]
+            #print("x: ", x)
+
+            # GirdersSectionsList
+            GirdersSectionsList.append(GirdersSection)
+
+            # CrossbeamsSectionsList
+            CrossbeamsSectionsList.append(CrossbeamsSection)
+
+            # GridFieldsLimits
+            GridFieldsLimits = np.append(GridFieldsLimits, np.array([[xl, x + i * spacing]]), axis = 0)
+            #GridFieldsLimits.push([xl, xl + GirdersLength]);
+            xl = xl + GirdersLength
+
+        xList = np.sort(xList)
+        #print("xList: ", xList)
+        #print("GirdersSectionsList: ", GirdersSectionsList)
+        #print("CrossbeamsSectionsList: ", CrossbeamsSectionsList)
+        #print("GridFieldsLimits: ", GridFieldsLimits)
+        #print("xl: ", xl)
+
+        xListWithLoads = np.concatenate((xList, np.array([i['X'] for i in LoadsList])))
+        xListWithLoads = np.unique(xListWithLoads)
+        xListWithLoads = np.sort(xListWithLoads)
+        #print("xListWithLoads: ", xListWithLoads)
+
+        #
+        joints = [] #np.array([])
+        #jointsWithLoad = np.array([])
+        beams = [] #np.array([])
+        
+        # questi se evito di conservare oggetti
+        Joints = np.array([])
+        Beams = np.array([])
+    
+        #
+        Joint = 0
+        Beam = 0
+        g = 0 # group of girders
+        cb = 0 # group crossbeams
+
+        #
+        JointI = Joint
+
+        # loop along y
+        for j, y in enumerate(yListWithLoads):
+            if y in yList: # is it a girder ?
+                g = g + 1
+
+            # loop along x
+            for i, x in enumerate(xListWithLoads):
+                # get the GirdersSection
+                # let GirdersSection: string | undefined;
+                flag = False
+                c = -1
+                while flag == False and c < len(GridFieldsLimits):
+                    c = c + 1
+                    flag = x >= GridFieldsLimits[c][0] and x <= GridFieldsLimits[c][1]
+                #print("GridJs > getElements", x, " > ", GirdersSection)
+
+                # joints
+                Joint = Joint + 1
+                #const xr: number = x * Math.cos(GridAngleRad) - y * Math.sin(GridAngleRad);
+                xr = x # askew
+                yr = x * math.sin(GridAngleRad) + y * math.cos(GridAngleRad)
+                joints.append({ "Joint": Joint, "x": xr.item(), "y": yr.item() })
+                #joints = np.append(joints, [{ "Joint": Joint, "x": xr, "y": yr }] )
+                #Joints.append([Joint, xr, yr])
+                Joints = np.append(Joints, [Joint, xr, yr])
+
+                # girders
+                if y in yList and i > 0:
+                    Beam = Beam + 1
+                    JointJ = Joint
+                    GroupName = "G" + str(g)
+                    beams.append({
+                        "Beam": Beam, 
+                        "JointI": JointI,
+                        "JointJ": JointJ,
+                        "AnalSect": GirdersSectionsList[c],
+                        "GroupName": GroupName,
+                    })
+                    #Beams.append(Beam, JointI, JointJ, GirdersSectionsList[c], GroupName);
+                    Beams = np.append(Beams, [JointI, JointJ, GirdersSectionsList[c], GroupName])
+
+                    JointI = JointJ
+                else:
+                    JointI = Joint
+
+        # Crossbeams
+        # loop along x
+        for i, x in enumerate(xListWithLoads):
+            if x in xList: # is it a crossbeam ?
+                cb = cb + 1
+
+                # loop along y
+            for j, y in enumerate(yListWithLoads):
+                JointI = 1 + i + len(xListWithLoads) * (j - 1)
+                JointJ = 1 + i + len(xListWithLoads) * (j - 0)
+                #print("GridJs > getElements > JointI, JointJ", JointI, JointJ)
+
+                if (x in xList and y > 0 and y <= widthOfTheGrid and JointI > 0 and JointJ > 0):
+                    #print("GridJs > getElements > y", y)
+                    Beam = Beam + 1
+                    GroupName = "CB" + str(cb)
+                    beams.append({
+                        "Beam": Beam,
+                        "JointI": JointI,
+                        "JointJ": JointJ,
+                        "AnalSect": CrossbeamsSectionsList[c],
+                        "GroupName": GroupName
+                    })
+                    Beams = np.append(Beams, [Beam, JointI, JointJ, CrossbeamsSectionsList[c], GroupName])
+
+        # shells        
+        shells = [] #np.array([])
+        Shells = np.array([]) # se non conservo oggetti
+        Shell = 0
+
+        for j, y in enumerate(yListWithLoads):
+            for i, x in enumerate(xListWithLoads):
+                JointI = 1 + i + len(xListWithLoads) * (j - 1)
+                JointJ = JointI + 1
+                JointL = 1 + i + len(xListWithLoads) * (j - 0)
+                JointK = JointL + 1
+
+                flag = False
+                c = 0
+                while flag == False and c < len(GridFieldsLimits):
+                    flag = x >= GridFieldsLimits[c][0] and x <= GridFieldsLimits[c][1]
+                    #print("GridJs > getElements > between", flag, " > ", c)
+                    c = c + 1
+                #print("c: ", c)
+
+                Shell = Shell + 1
+                shells.append({
+                    "Shell": Shell,
+                    "JointI": JointI,
+                    "JointJ": JointJ,
+                    "JointK": JointK,
+                    "JointL": JointL
+                    })
+                Shells = np.append(Shells, [Shell, JointI, JointJ, JointK, JointL])
+        
+        # GroupNames
+        GroupNames = np.unique(np.array([i['GroupName'] for i in beams]))
+        #print("GroupNames: ", GroupNames)
+
+        #print("joints: ", joints)
+        #print("Joints: ", Joints)
+
+        #print("beams: ", beams)
+        #print("Beams: ", Beams)
+        
+        #print("shells: ", shells)
+        #print("Shells: ", Shells)        
+        
+        return {
+            "joints": joints,
+            "beams": beams,
+            "shells": shells if GridModelType == "FEM" else [],
+            #
+            "GridFieldsLimits": GridFieldsLimits,
+            #"xList": xList,
+            #"jointsWithLoad": jointsWithLoad,
+            "yList": yList,
+            "GroupNames": GroupNames,
+            #
+            "Joints": Joints,
+            "Beams": Beams,
+            "Shells": Shells if GridModelType == "FEM" else []
+        }

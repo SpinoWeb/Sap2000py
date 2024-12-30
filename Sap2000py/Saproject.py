@@ -206,6 +206,16 @@ class SapCore:
 
         create_3d_frame(self.Sapobj, parameters)
 
+    def create_grid(self, parameters: dict = {}):
+        """Create a new grid
+
+        Args:
+            parameters: {}
+        """
+        from .core.build import create_grid
+
+        create_grid(self.Sapobj, parameters)
+
 class Saproject(metaclass = SapMeta):
     """SAP2000 project class.
         ```
