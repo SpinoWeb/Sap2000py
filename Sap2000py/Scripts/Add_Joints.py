@@ -1,6 +1,6 @@
 import numpy as np
 class Add_Joints_Cartesian:
-    def __init__(self,Sapobj,Cartesian_coord):
+    def __init__(self, Sapobj, Cartesian_coord):
         """
         Add Joints by Cartesian coordinate system
         input Cartesian_coord(ndarray)-Nx3 array or Nx2 array in 2D model

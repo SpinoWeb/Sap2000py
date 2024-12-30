@@ -42,7 +42,7 @@ Sap.setUnits("KN_m_C")
 #Sap.Scripts.AddCommonMaterialSet(standard = "JTG")
 
 # 
-Sap.core.create_grid({"NumberBaysX" : 1, "NumberStorys" : 1})
+Sap.core.create_grid() # {"NumberBaysX" : 1, "NumberStorys" : 1}
 #print("base_points : ", Sap.base_points)
 #print("columns : ", Sap.columns)
 #print("beams_x : ", Sap.beams_x)
@@ -84,4 +84,4 @@ Sap.File.Save(ModelPath)
 Sap.File.Save(ModelPath)
 
 # Don't forget to close the program
-#Sap.closeSap()
+Sap.closeSap()

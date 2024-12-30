@@ -411,10 +411,11 @@ class create_grid:
         x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
         y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
         r = [0, 0, 0, 0, 0, 0, 0, 0]
-        ret = self.__Model.PropFrame.SDShape.SetPolygon("girder", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
+        self.__Model.PropFrame.SDShape.SetPolygon("girder", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
+        #self.__Model.PropFrame.SetRectangle("girder", C2530, 1.5, .5)
 
         #self.__Model.PropFrame.SetRectangle("crossbeam", C2530, 0.3, 0.5)
-        self.__Model.PropFrame.SetTee("crossbeam", C2530, 0.5, 0.5, 0.1, 0.1)
+        self.__Model.PropFrame.SetTee("crossbeam", C2530, 1, 1, .2, .2)
 
         # parameters
         Grid = parameters["Grid"] if "Grid" in parameters else {
@@ -425,13 +426,13 @@ class create_grid:
                 "GirdersSpacing": 1.5,
                 "Girder": 1,
                 "LdX": 4,
-                "ShowJointsText": False,
-                "ShowBeamsText": False,
-                "ShowShellsText": False,                
+                #"ShowJointsText": False,
+                #"ShowBeamsText": False,
+                #"ShowShellsText": False,                
                 "E1": 31e06,
                 "I33": 3125e-06,
                 "E1I33": 96875, # 31 * 3125
-                "GridModelType": "FEM"
+                "GridModelType": "FEM" # FEM, Grid
             }    
         
         GridFields = parameters["GridFields"] if "GridFields" in parameters else [
@@ -593,9 +594,30 @@ class create_grid:
         ActiveTrucksList = self.__ActiveTrucksList(ScenariosList, Trucks, Axes)
         #print("ActiveTrucksList: ", ActiveTrucksList)
 
+        # Elements
         Elements = self.__GetElements(Grid, GridFields, ActiveTrucksList)
-        #print("Elements: ", Elements)
+
+        Joints = Elements['Joints']
+        #print("Joints: ", Joints)
+
+        for i in range(0, len(Joints), 3):
+            name = str(int(Joints[i]))
+            #print(i, name, Joints[i + 1], Joints[i + 2])
+            self.__Model.PointObj.AddCartesian(Joints[i + 1], Joints[i + 2], 0, name, name)
+
+        Beams = Elements['Beams']
+        #print("Beams: ", len(Beams))
+        for i in range(0, len(Beams), 5):
+            #print(i, Beams[i], Beams[i + 1], Beams[i + 2], Beams[i + 3], Beams[i + 4])
+            self.__Model.FrameObj.AddByPoint(Beams[i + 1], Beams[i + 2], Beams[i], Beams[i + 3])
         
+        Shells = Elements['Shells']
+        #print("Shells: ", len(Shells))
+        for i in range(0, len(Shells), 5):
+            #print(i, Shells[i], Shells[i + 1], Shells[i + 2], Shells[i + 3], Shells[i + 4])
+            Point = [Shells[i + 1], Shells[i + 2], Shells[i + 3], Shells[i + 4]]
+            self.__Model.AreaObj.AddByPoint(4, Point, Shells[i])
+
         # storing
         SapObj.base_points = base_points
         SapObj.girders = girders
@@ -723,7 +745,7 @@ class create_grid:
         widthOfTheGrid = self.__widthOfTheGrid(Grid)
 
         # init
-        Elements = []
+        #Elements = []
         yList  = np.array([])
         xList = np.array([])
 
@@ -807,6 +829,7 @@ class create_grid:
         # questi se evito di conservare oggetti
         Joints = np.array([])
         Beams = np.array([])
+        #print("Joints: ", Joints, Joints.shape)
     
         #
         Joint = 0
@@ -842,6 +865,7 @@ class create_grid:
                 #joints = np.append(joints, [{ "Joint": Joint, "x": xr, "y": yr }] )
                 #Joints.append([Joint, xr, yr])
                 Joints = np.append(Joints, [Joint, xr, yr])
+                #print("Joints: ", Joints.shape)
 
                 # girders
                 if y in yList and i > 0:
@@ -856,7 +880,7 @@ class create_grid:
                         "GroupName": GroupName,
                     })
                     #Beams.append(Beam, JointI, JointJ, GirdersSectionsList[c], GroupName);
-                    Beams = np.append(Beams, [JointI, JointJ, GirdersSectionsList[c], GroupName])
+                    Beams = np.append(Beams, [Beam, JointI, JointJ, GirdersSectionsList[c], GroupName])
 
                     JointI = JointJ
                 else:
@@ -892,8 +916,11 @@ class create_grid:
         Shells = np.array([]) # se non conservo oggetti
         Shell = 0
 
-        for j, y in enumerate(yListWithLoads):
-            for i, x in enumerate(xListWithLoads):
+        for j in range(1, len(yListWithLoads)):
+            y = yListWithLoads[j]
+            for i in range(0, len(xListWithLoads) - 1):
+                x = xListWithLoads[i]
+
                 JointI = 1 + i + len(xListWithLoads) * (j - 1)
                 JointJ = JointI + 1
                 JointL = 1 + i + len(xListWithLoads) * (j - 0)
@@ -909,20 +936,20 @@ class create_grid:
 
                 Shell = Shell + 1
                 shells.append({
-                    "Shell": Shell,
-                    "JointI": JointI,
-                    "JointJ": JointJ,
-                    "JointK": JointK,
-                    "JointL": JointL
+                    "Shell": str(Shell),
+                    "JointI": str(JointI),
+                    "JointJ": str(JointJ),
+                    "JointK": str(JointK),
+                    "JointL": str(JointL)
                     })
-                Shells = np.append(Shells, [Shell, JointI, JointJ, JointK, JointL])
+                Shells = np.append(Shells, [str(Shell), str(JointI), str(JointJ), str(JointK), str(JointL)])
         
         # GroupNames
         GroupNames = np.unique(np.array([i['GroupName'] for i in beams]))
         #print("GroupNames: ", GroupNames)
 
         #print("joints: ", joints)
-        #print("Joints: ", Joints)
+        #print("Joints: ", Joints.shape)
 
         #print("beams: ", beams)
         #print("Beams: ", Beams)
