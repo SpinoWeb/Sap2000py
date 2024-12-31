@@ -390,41 +390,15 @@ class create_grid:
         self.__Object = SapObj._Object
         self.__Model = SapObj._Model
 
-        # Define material properties
-        C2530 = "C25/30"
-        self.__Model.PropMaterial.SetMaterial(C2530, 2)
-        self.__Model.PropMaterial.SetOConcrete(C2530, 
-                                               Fc = 25e3, 
-                                               IsLightweight = False, 
-                                               FcsFactor = 0,
-                                               SSType = 1,
-                                               SSHysType = 2,
-                                               StrainAtFc = 2e-3, 
-                                               StrainUltimate = 3.5e-3                                               
-                                            )
-
-        # Define section properties        
-        self.__Model.PropFrame.SetSDSection("girder", C2530)
-
-        #add polygon shape to new property
-        NumberPoints = 8
-        x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
-        y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
-        r = [0, 0, 0, 0, 0, 0, 0, 0]
-        self.__Model.PropFrame.SDShape.SetPolygon("girder", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
-        #self.__Model.PropFrame.SetRectangle("girder", C2530, 1.5, .5)
-
-        #self.__Model.PropFrame.SetRectangle("crossbeam", C2530, 0.3, 0.5)
-        self.__Model.PropFrame.SetTee("crossbeam", C2530, 1, 1, .2, .2)
-
         # parameters
         Grid = parameters["Grid"] if "Grid" in parameters else {
                 "GUID": "grd01",
                 "GridName": "G01",
                 "GridAngle": 0,
-                "GirdersNumber": 5,
+                "GirdersNumber": 4,
                 "GirdersSpacing": 1.5,
-                "Girder": 1,
+                "SlabThickness" : .2,
+                #"Girder": 1,
                 "LdX": 4,
                 #"ShowJointsText": False,
                 #"ShowBeamsText": False,
@@ -549,6 +523,18 @@ class create_grid:
                         "TruckGUID": "tck01",
                         "x": 2,
                         "y": 2
+                    }
+                ]
+            },
+            {
+                "GridGUID": "grd01",
+                "ScenarioGUID": "scn02",
+                "ScenarioName": "Scenario 02",
+                "ScenarioTrucks": [
+                    {
+                        "TruckGUID": "tck01",
+                        "x": 2,
+                        "y": 2
                     },
                     {
                         "TruckGUID": "tck01",
@@ -559,33 +545,63 @@ class create_grid:
             }
         ]
 
-        #
+        # Define material properties
+        C2530 = "C25/30"
+        self.__Model.PropMaterial.SetMaterial(C2530, 2)
+        self.__Model.PropMaterial.SetOConcrete(C2530, 
+                                               Fc = 25e3, 
+                                               IsLightweight = False, 
+                                               FcsFactor = 0,
+                                               SSType = 1,
+                                               SSHysType = 2,
+                                               StrainAtFc = 2e-3, 
+                                               StrainUltimate = 3.5e-3                                               
+                                            )
+
+        # Define section properties        
+        self.__Model.PropFrame.SetSDSection("girder", C2530)
+        #add polygon shape to new property
+        NumberPoints = 8
+        x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
+        y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
+        r = [0, 0, 0, 0, 0, 0, 0, 0]
+        #self.__Model.PropFrame.SDShape.SetPolygon("girder", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
+        self.__Model.PropFrame.SDShape.SetISection("girder", "SH1", C2530, "", 0, 0, 0, -1, 1.5, 1, .2, .2, .8, .2)
+        #self.__Model.PropFrame.SetRectangle("girder", C2530, 1.5, .5)
+        """
+        PropFrame.SDShape
+        Function SetISection(
+            ByVal Name As String,
+            ByRef ShapeName As String,
+            ByVal MatProp As String,
+            ByVal PropName As String, 
+            ByVal XCenter As Double, 
+            ByVal YCenter As Double, 
+            ByVal Rotation As Double, 
+            Optional ByVal Color As Long = -1, 
+            Optional ByVal h As Double = 24, 
+            Optional ByVal bf As Double = 24, 
+            Optional ByVal tf As Double = 2.4, 
+            Optional ByVal tw As Double = 2.4, 
+            Optional ByVal bfb As Double = 24, 
+            Optional ByVal tfb As Double = 2.4) As Long
+        """
+
+        self.__Model.PropFrame.SetRectangle("crossbeam", C2530, 1, 0.2)
+        #self.__Model.PropFrame.SetTee("crossbeam", C2530, 1, 1, .2, .2)
+
+        SlabThickness = Grid['SlabThickness'] if 'SlabThickness' in Grid else .2
+        self.__Model.PropArea.SetShell("slab", 1, C2530, 0, SlabThickness, SlabThickness)
+
+        # groups
         base_points = []
         girders = []
         crossbeams = []
 
-        # loadpatterns
-        SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
-        SapObj.Define.loadpatterns.Add("G2k", myType = 3)
-        SapObj.Define.loadpatterns.Add("Q1k", myType = 3)
-        SapObj.Define.loadpatterns.Add("H", myType = 3)
-
-        # loadcases
-        #SapObj.Define.loadcases.StaticLinear.SetCase("H")
-
-        # combos
-        comboName = "Fd"
-        SapObj.Define.LoadCombo.Add(comboName, comboType = "LinearAdd")
-        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "G1k", SF = 1.3)
-        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "G2k", SF = 1.5)
-        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "Q1k", SF = 1.5)
-
-        # loads
-
         # generate model
-        widthOfTheGrid = self.__widthOfTheGrid(Grid)        
+        #widthOfTheGrid = self.__widthOfTheGrid(Grid)        
         lengthOfTheGrid = self.__lengthOfTheGrid(GridFields)
-        XiList = self.__XiList(Grid, GridFields)
+        #XiList = self.__XiList(Grid, GridFields)
         #print(widthOfTheGrid, lengthOfTheGrid, XiList)
 
         ScenariosList = [Scenario for Scenario in Scenarios if Scenario['GridGUID'] == Grid['GUID']]
@@ -597,26 +613,102 @@ class create_grid:
         # Elements
         Elements = self.__GetElements(Grid, GridFields, ActiveTrucksList)
 
+        #self.__Model.GridSys.SetGridSys("GridSysA", 1, 1, 0, 0)
+        #print(dir(self.__Model.from_param))
+
+        # Grid Lines
+        FieldsKeysIncluded = [
+                'CoordSys', 'AxisDir', 'GridID', 'XRYZCoord', 'LineType',
+                    'LineColor', 'Visible', 'BubbleLoc', 'AllVisible', 'BubbleSize'
+            ]    
+        data = [
+                # Z
+                'GLOBAL', 'Z', 'Z0', '0', 'Primary', 'Gray8Dark', 'Yes', 'Start', 'Yes', '2',
+            ]
+        
+        # X
+        LdX = Grid['LdX'] if 'LdX' in Grid else 2
+        dX = lengthOfTheGrid / LdX
+        for i in range(LdX + 1):
+            GridID = 'X' + str(i + 1)
+            XRYZCoord = str(i * dX).replace('.', ',')
+            #print(GridID, " : ", XRYZCoord)
+            data = data + ['GLOBAL', 'X', GridID, XRYZCoord, 'Primary', 'Gray8Dark', 'Yes', 'End', 'Yes', '2']
+
+        # Y
+        yList = Elements['yList']
+        #print("yList: ", yList)
+        for i, y in enumerate(yList):
+            GridID = 'Y' + str(i + 1)
+            XRYZCoord = str(y).replace('.', ',')
+            #print(GridID, " : ", XRYZCoord)
+            data = data + ['GLOBAL', 'Y', GridID, XRYZCoord, 'Primary', 'Gray4', 'Yes', 'Start', 'Yes', '2']
+
+        NumberRecords = int(len(data) / len(FieldsKeysIncluded))
+        TableKey = 'Grid Lines'
+        TableVersion = 1
+        ret = self.__Model.DatabaseTables.SetTableForEditingArray(TableKey, TableVersion, FieldsKeysIncluded, NumberRecords, data)              
+        #print(ret)
+        FillImport = True
+        ret = self.__Model.DatabaseTables.ApplyEditedTables(FillImport)
+        #print(ret)
+
+        # Joints
         Joints = Elements['Joints']
         #print("Joints: ", Joints)
-
         for i in range(0, len(Joints), 3):
             name = str(int(Joints[i]))
             #print(i, name, Joints[i + 1], Joints[i + 2])
             self.__Model.PointObj.AddCartesian(Joints[i + 1], Joints[i + 2], 0, name, name)
 
+        # Beams
         Beams = Elements['Beams']
         #print("Beams: ", len(Beams))
         for i in range(0, len(Beams), 5):
             #print(i, Beams[i], Beams[i + 1], Beams[i + 2], Beams[i + 3], Beams[i + 4])
             self.__Model.FrameObj.AddByPoint(Beams[i + 1], Beams[i + 2], Beams[i], Beams[i + 3])
         
+        # Shells
         Shells = Elements['Shells']
         #print("Shells: ", len(Shells))
         for i in range(0, len(Shells), 5):
             #print(i, Shells[i], Shells[i + 1], Shells[i + 2], Shells[i + 3], Shells[i + 4])
             Point = [Shells[i + 1], Shells[i + 2], Shells[i + 3], Shells[i + 4]]
-            self.__Model.AreaObj.AddByPoint(4, Point, Shells[i])
+            self.__Model.AreaObj.AddByPoint(4, Point, Shells[i], "slab")
+
+        JointsWithRestrains = Elements['JointsWithRestrains']
+        #print("JointsWithRestrains: ", len(JointsWithRestrains))
+        for i in range(0, len(JointsWithRestrains), 1):
+            name = str(int(JointsWithRestrains[i]))
+            self.__Model.PointObj.SetRestraint(name, [True, True, True, True, False, True])
+            base_points.append(name)
+
+        # loadpatterns
+        SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
+        SapObj.Define.loadpatterns.Add("G2k", myType = 3)
+        SapObj.Define.loadpatterns.Add("Q1k", myType = 3)
+        #SapObj.Define.loadpatterns.Add("H", myType = 3)
+
+        for Scenario in ScenariosList:
+            #print(Scenario)
+            SapObj.Define.loadpatterns.Add(Scenario["ScenarioName"], myType = 3)
+
+        # loadcases
+        #SapObj.Define.loadcases.StaticLinear.SetCase("H")
+
+        # combos
+        comboName = "CV"
+        SapObj.Define.LoadCombo.Add(comboName, comboType = "LinearAdd")
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "G1k", SF = 1.3)
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "G2k", SF = 1.5)
+        SapObj.Define.LoadCombo.SetCaseList(comboName, CNameType = "LoadCase", CName = "Q1k", SF = 1.5)
+
+        # loads
+        JointsWithLoad = Elements['JointsWithLoad']
+        #print("JointsWithLoad: ", len(JointsWithLoad))
+        for i in range(0, len(JointsWithLoad), 3):
+            #print(i, JointsWithLoad[i], JointsWithLoad[i + 1], JointsWithLoad[i + 2])
+            self.__Model.PointObj.SetLoadForce(JointsWithLoad[i], JointsWithLoad[i + 1], [0, 0, float(JointsWithLoad[i + 2]), 0, 0, 0]) # GLOBAL
 
         # storing
         SapObj.base_points = base_points
@@ -743,10 +835,21 @@ class create_grid:
         
         GridAngleRad = math.radians(GridAngle) # (GridAngle * np.pi) / 180
         widthOfTheGrid = self.__widthOfTheGrid(Grid)
+        lengthOfTheGrid = self.__lengthOfTheGrid(GridFields)
+        #print("lengthOfTheGrid: ", lengthOfTheGrid)
+
+        # add x corresponding to interesting displ points
+        xGridList = np.array([])
+        LdX = Grid['LdX'] if 'LdX' in Grid else 2
+        dX = lengthOfTheGrid / LdX
+        for i in range(LdX + 1):            
+            xGridList = np.append(xGridList, i * dX)
+        #xGridList = np.sort(xGridList)
+        #print("xGridList: ", xGridList)
 
         # init
         #Elements = []
-        yList  = np.array([])
+        yList = np.array([])
         xList = np.array([])
 
         # y
@@ -816,20 +919,22 @@ class create_grid:
         #print("GridFieldsLimits: ", GridFieldsLimits)
         #print("xl: ", xl)
 
-        xListWithLoads = np.concatenate((xList, np.array([i['X'] for i in LoadsList])))
-        xListWithLoads = np.unique(xListWithLoads)
-        xListWithLoads = np.sort(xListWithLoads)
+        xListWithLoads = np.sort(np.unique(np.concatenate((xList, xGridList, np.array([i['X'] for i in LoadsList])))))
         #print("xListWithLoads: ", xListWithLoads)
 
         #
-        joints = [] #np.array([])
-        #jointsWithLoad = np.array([])
-        beams = [] #np.array([])
+        joints = []
+        jointsWithLoad = []
+        jointsWithRestrains = []
+        jointsOfInterest = []
+        beams = []
         
         # questi se evito di conservare oggetti
         Joints = np.array([])
+        JointsWithLoad = np.array([])
+        JointsWithRestrains = np.array([])
+        JointsOfInterest = np.array([])
         Beams = np.array([])
-        #print("Joints: ", Joints, Joints.shape)
     
         #
         Joint = 0
@@ -861,12 +966,33 @@ class create_grid:
                 #const xr: number = x * Math.cos(GridAngleRad) - y * Math.sin(GridAngleRad);
                 xr = x # askew
                 yr = x * math.sin(GridAngleRad) + y * math.cos(GridAngleRad)
+
                 joints.append({ "Joint": Joint, "x": xr.item(), "y": yr.item() })
                 #joints = np.append(joints, [{ "Joint": Joint, "x": xr, "y": yr }] )
                 #Joints.append([Joint, xr, yr])
                 Joints = np.append(Joints, [Joint, xr, yr])
                 #print("Joints: ", Joints.shape)
 
+                # save loaded joints
+                a = [l for l in LoadsList if l['X'] == x and l['Y'] == y]
+                if len(a) > 0:
+                    #print(Joint, a)                    
+                    for ai in a:
+                        P = - float(ai['P'])
+                        jointsWithLoad.append({'Joint': Joint, 'ScenarioName': ai['ScenarioName'], 'P': P})
+                        JointsWithLoad = np.append(JointsWithLoad, [Joint, ai['ScenarioName'], P])
+
+                # save restrained joints
+                if x == xList[0] or x == xList[-1]:                    
+                    if len(yList[np.isin(yList, y)]) > 0:
+                        jointsWithRestrains.append({'Joint': Joint})
+                        JointsWithRestrains = np.append(JointsWithRestrains, [Joint])
+
+                # save joints of interest
+                if len(xGridList[np.isin(xGridList, x)]) > 0:
+                    jointsOfInterest.append({'Joint': Joint})
+                    JointsOfInterest = np.append(JointsOfInterest, [Joint])
+                
                 # girders
                 if y in yList and i > 0:
                     Beam = Beam + 1
@@ -949,7 +1075,13 @@ class create_grid:
         #print("GroupNames: ", GroupNames)
 
         #print("joints: ", joints)
-        #print("Joints: ", Joints.shape)
+        #print("jointsWithLoad: ", jointsWithLoad)
+        #print("jointsWithRestrains: ", jointsWithRestrains)
+        #print("jointsOfInterest: ", jointsOfInterest)      
+        #print("Joints: ", Joints)
+        #print("JointsWithLoad: ", JointsWithLoad)
+        #print("JointsWithRestrains: ", JointsWithRestrains)
+        #print("JointsOfInterest: ", JointsOfInterest.shape)   
 
         #print("beams: ", beams)
         #print("Beams: ", Beams)
@@ -958,17 +1090,22 @@ class create_grid:
         #print("Shells: ", Shells)        
         
         return {
-            "joints": joints,
-            "beams": beams,
-            "shells": shells if GridModelType == "FEM" else [],
-            #
-            "GridFieldsLimits": GridFieldsLimits,
-            #"xList": xList,
+            #"joints": joints,
             #"jointsWithLoad": jointsWithLoad,
+            #"jointsWithRestrains": jointsWithRestrains,
+            #"jointsOfInterest": jointsOfInterest,
+            #"beams": beams,
+            #"shells": shells if GridModelType == "FEM" else [],
+            #
+            #"GridFieldsLimits": GridFieldsLimits,
+            #"xList": xList,
             "yList": yList,
             "GroupNames": GroupNames,
             #
             "Joints": Joints,
+            "JointsWithLoad": JointsWithLoad,
+            "JointsWithRestrains": JointsWithRestrains,
+            "JointsOfInterest": JointsOfInterest,
             "Beams": Beams,
             "Shells": Shells if GridModelType == "FEM" else []
         }

@@ -71,17 +71,18 @@ for g in groups:
 Sap.File.Save(ModelPath)
 
 # Remove all cases for analysis
-#Sap.Scripts.Analyze.RemoveCases("All")
+Sap.Scripts.Analyze.RemoveCases("All")
 # Select cases for analysis
-#Sap.Scripts.Analyze.AddCases(CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k", "H"])
+CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k", "Scenario 01", "Scenario 02"]
+Sap.Scripts.Analyze.AddCases(CaseName = CaseName)
 # Delete Results
-#Sap.Scripts.Analyze.DeleteResults("All")
+Sap.Scripts.Analyze.DeleteResults("All")
 # Run analysis
-#Sap.Scripts.Analyze.RunAll()
+Sap.Scripts.Analyze.RunAll()
 
 # Save your file with a Filename(default: your ModelPath)
 #Sap.File.Save()
 Sap.File.Save(ModelPath)
 
 # Don't forget to close the program
-Sap.closeSap()
+#Sap.closeSap()
