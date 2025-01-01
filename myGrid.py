@@ -44,9 +44,8 @@ Sap.setUnits("KN_m_C")
 # 
 Sap.core.create_grid() # {"NumberBaysX" : 1, "NumberStorys" : 1}
 #print("base_points : ", Sap.base_points)
-#print("columns : ", Sap.columns)
-#print("beams_x : ", Sap.beams_x)
-#print("beams_y : ", Sap.beams_y)
+#print("Scenarios : ", Sap.Scenarios)
+#print("JointsOfInterest : ", Sap.JointsOfInterest)
 
 #
 Sap.RefreshView(0, False)
@@ -55,8 +54,8 @@ Sap.RefreshView(0, False)
 #Sap.Scripts.Group.RemovefromGroup("base_points", Sap.base_points, "Point")
 groups = [
     {"name": "base_points", "type": "Point"},
-    {"name": "girders", "type": "Frame"},
-    {"name": "crossbeams", "type": "Frame"}
+    #{"name": "girders", "type": "Frame"},
+    #{"name": "crossbeams", "type": "Frame"}
 ]
 for g in groups:
     #print("g: ", g['name'], g)
@@ -73,12 +72,73 @@ Sap.File.Save(ModelPath)
 # Remove all cases for analysis
 Sap.Scripts.Analyze.RemoveCases("All")
 # Select cases for analysis
-CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k", "Scenario 01", "Scenario 02"]
+CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k"] + Sap.Scenarios
 Sap.Scripts.Analyze.AddCases(CaseName = CaseName)
 # Delete Results
 Sap.Scripts.Analyze.DeleteResults("All")
 # Run analysis
 Sap.Scripts.Analyze.RunAll()
+
+# init a workbook
+wb = openpyxl.Workbook()
+
+# select combo for output
+xcomboName = "Scenario 01"
+comboName = "Scenario 02"
+Sap.Scripts.SelectCombo_Case([comboName])
+
+# post processing > xlsx
+FileName = Path(".\Test\\" + ProjectName + "_" + comboName + ".xlsx")
+
+# get Joint reaction result by group name
+Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
+#print("Name, AbsReaction: ", Name, AbsReaction)
+#print("MaxReaction, MinReaction: ", MaxReaction, MinReaction)
+ws = wb.create_sheet("base_points-jointforces") # insert at the end (default)
+Sap.Scripts.writecell(ws, np.array([["F1", "F2", "F3", "M1", "M2", "M3"]]), "B1" )
+Sap.Scripts.writecell(ws, AbsReaction[: , [0, 1, 2, 3, 4, 5] ], "B2" )
+for i, v in enumerate(Name):
+    ws[f"A{i + 2}"].value = v
+
+# get Joint force result by group name
+GroupFrames = [i for i in getattr(Sap, "GroupNames") if i.split('-')[0] == "Frame"]
+#print("GroupFrames: ", GroupFrames)
+for g in GroupFrames:
+    #print(g)
+    ret = Sap.Results.Frame.JointForce(g, ItemTypeElm = 2)
+    ws = wb.create_sheet(f"{g}-jointforce") # insert at the end (default)
+    headers = ["Obj", "Elm", "PointElm", "LoadCase", "StepType", "F1", "F2", "F3", "V2", "T", "M3"]
+    #print(len(headers) + 1)
+    Sap.Scripts.writecell(ws, np.array([headers]), "A1" )
+    Sap.Scripts.writecell(ws, np.transpose(np.array(ret[1 : len(headers) + 1])), "A2" )
+
+"""
+# get Joint force result by group name
+GroupFrames = [i for i in getattr(Sap, "GroupNames") if i.split('-')[0] == "Frame"]
+#print("GroupFrames: ", GroupFrames)
+for g in GroupFrames:
+    #print(g)
+    ret = Sap.Results.Frame.Force(g, ItemTypeElm = 2)
+    ws = wb.create_sheet(f"{g}-frameforce") # insert at the end (default)
+    headers = ["Obj", "Elm", "PointElm", "LoadCase", "StepType", "P", "V2", "V3", "T", "M2", "M3"]
+    #print(len(headers) + 1)
+    Sap.Scripts.writecell(ws, np.array([headers]), "A1" )
+    Sap.Scripts.writecell(ws, np.transpose(np.array(ret[1 : len(headers) + 1])), "A2" )
+"""
+    
+# get joint displ result by group name
+GroupPoints = [i for i in getattr(Sap, "GroupNames") if i.split('-')[0] == "Point"]
+#print("GroupPoints: ", GroupPoints)
+for g in GroupPoints:
+    #print(g)
+    ret = Sap.Results.Joint.Displ(g, ItemTypeElm = 2)
+    ws = wb.create_sheet(f"{g}-displ") # insert at the end (default)
+    headers = ["Obj", "Elm", "LoadCase", "StepType", "StepNum", "U1", "U2", "U3", "R1", "R2", "R3"]
+    #print(len(headers) + 1)
+    Sap.Scripts.writecell(ws, np.array([headers]), "A1" )
+    Sap.Scripts.writecell(ws, np.transpose(np.array(ret[1 : len(headers) + 1])), "A2" )
+
+wb.save(FileName)
 
 # Save your file with a Filename(default: your ModelPath)
 #Sap.File.Save()

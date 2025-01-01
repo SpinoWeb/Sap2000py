@@ -683,6 +683,14 @@ class create_grid:
             self.__Model.PointObj.SetRestraint(name, [True, True, True, True, False, True])
             base_points.append(name)
 
+        groups = Elements['groups']
+        #print("groups: ", groups)
+        for g in list(groups.keys()):
+            gtype = g.split('-')[0]
+            SapObj.Scripts.Group.AddtoGroup(g, groups[g], gtype)
+            #items = SapObj.Scripts.Group.GetElements(g)
+            #print(f'{g} : {items}')
+
         # loadpatterns
         SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
         SapObj.Define.loadpatterns.Add("G2k", myType = 3)
@@ -712,17 +720,14 @@ class create_grid:
 
         # storing
         SapObj.base_points = base_points
-        SapObj.girders = girders
-        SapObj.crossbeams = crossbeams
-        
+        #SapObj.girders = girders
+        #SapObj.crossbeams = crossbeams
+        SapObj.GroupNames = list(groups.keys())
+        #
+        SapObj.Scenarios = [i['ScenarioName'] for i in ScenariosList]
+        SapObj.JointsOfInterest = Elements["JointsOfInterest"]
+         
         print("Grid created successfully!")
-        """
-        return [
-            {"name": "base_points", "type": "Point"},
-            {"name": "girders", "type": "Frame"},
-            {"name": "crossbeams", "type": "Frame"}
-        ]
-        """
     
     # width Of the grid
     @staticmethod
@@ -928,6 +933,7 @@ class create_grid:
         jointsWithRestrains = []
         jointsOfInterest = []
         beams = []
+        groups = {}
         
         # questi se evito di conservare oggetti
         Joints = np.array([])
@@ -935,6 +941,7 @@ class create_grid:
         JointsWithRestrains = np.array([])
         JointsOfInterest = np.array([])
         Beams = np.array([])
+        #Groups = np.array([])
     
         #
         Joint = 0
@@ -949,6 +956,10 @@ class create_grid:
         for j, y in enumerate(yListWithLoads):
             if y in yList: # is it a girder ?
                 g = g + 1
+                framesGroupName = "Frame-G" + str(g)
+                framesGroup = np.array([])
+                pointsGroupName = "Point-G" + str(g)
+                pointsGroup = np.array([])
 
             # loop along x
             for i, x in enumerate(xListWithLoads):
@@ -997,26 +1008,38 @@ class create_grid:
                 if y in yList and i > 0:
                     Beam = Beam + 1
                     JointJ = Joint
-                    GroupName = "G" + str(g)
                     beams.append({
-                        "Beam": Beam, 
-                        "JointI": JointI,
-                        "JointJ": JointJ,
+                        "Beam": str(Beam), 
+                        "JointI": str(JointI),
+                        "JointJ": str(JointJ),
                         "AnalSect": GirdersSectionsList[c],
-                        "GroupName": GroupName,
+                        "GroupName": framesGroupName,
                     })
-                    #Beams.append(Beam, JointI, JointJ, GirdersSectionsList[c], GroupName);
-                    Beams = np.append(Beams, [Beam, JointI, JointJ, GirdersSectionsList[c], GroupName])
+                    #Beams.append(Beam, JointI, JointJ, GirdersSectionsList[c], framesGroupName);
+                    Beams = np.append(Beams, [str(Beam), str(JointI), str(JointJ), GirdersSectionsList[c], framesGroupName])
+
+                    framesGroup = np.append(framesGroup, [str(Beam)])
+                    pointsGroup = np.append(pointsGroup, [str(JointI), str(JointJ)])
 
                     JointI = JointJ
                 else:
                     JointI = Joint
+                
+            if y in yList: # is it a girder ?
+                #print(framesGroupName, framesGroup)
+                #print(pointsGroupName, pointsGroup)
+                groups[framesGroupName] = np.unique(framesGroup).tolist()
+                groups[pointsGroupName] = np.unique(pointsGroup).tolist()        
 
         # Crossbeams
         # loop along x
         for i, x in enumerate(xListWithLoads):
             if x in xList: # is it a crossbeam ?
                 cb = cb + 1
+                framesGroupName = "Frame-CB" + str(cb)
+                framesGroup = np.array([])
+                pointsGroupName = "Point-CB" + str(cb)
+                pointsGroup = np.array([])
 
                 # loop along y
             for j, y in enumerate(yListWithLoads):
@@ -1027,15 +1050,23 @@ class create_grid:
                 if (x in xList and y > 0 and y <= widthOfTheGrid and JointI > 0 and JointJ > 0):
                     #print("GridJs > getElements > y", y)
                     Beam = Beam + 1
-                    GroupName = "CB" + str(cb)
                     beams.append({
-                        "Beam": Beam,
-                        "JointI": JointI,
-                        "JointJ": JointJ,
+                        "Beam": str(Beam),
+                        "JointI": str(JointI),
+                        "JointJ": str(JointJ),
                         "AnalSect": CrossbeamsSectionsList[c],
-                        "GroupName": GroupName
+                        "GroupName": framesGroupName
                     })
-                    Beams = np.append(Beams, [Beam, JointI, JointJ, CrossbeamsSectionsList[c], GroupName])
+                    Beams = np.append(Beams, [str(Beam), str(JointI), str(JointJ), CrossbeamsSectionsList[c], framesGroupName])
+
+                    framesGroup = np.append(framesGroup, [str(Beam)])
+                    pointsGroup = np.append(pointsGroup, [str(JointI), str(JointJ)])
+
+            if x in xList: # is it a crossbeam ?
+                #print(framesGroupName, framesGroup)
+                #print(pointsGroupName, pointsGroup)
+                groups[framesGroupName] = np.unique(framesGroup).tolist()
+                groups[pointsGroupName] = np.unique(pointsGroup).tolist()
 
         # shells        
         shells = [] #np.array([])
@@ -1071,7 +1102,7 @@ class create_grid:
                 Shells = np.append(Shells, [str(Shell), str(JointI), str(JointJ), str(JointK), str(JointL)])
         
         # GroupNames
-        GroupNames = np.unique(np.array([i['GroupName'] for i in beams]))
+        GroupNames = list(groups.keys())
         #print("GroupNames: ", GroupNames)
 
         #print("joints: ", joints)
@@ -1087,7 +1118,9 @@ class create_grid:
         #print("Beams: ", Beams)
         
         #print("shells: ", shells)
-        #print("Shells: ", Shells)        
+        #print("Shells: ", Shells)
+
+        #print("groups: ", groups)
         
         return {
             #"joints": joints,
@@ -1096,6 +1129,7 @@ class create_grid:
             #"jointsOfInterest": jointsOfInterest,
             #"beams": beams,
             #"shells": shells if GridModelType == "FEM" else [],
+            "groups" : groups,
             #
             #"GridFieldsLimits": GridFieldsLimits,
             #"xList": xList,
