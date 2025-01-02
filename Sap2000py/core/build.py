@@ -385,28 +385,150 @@ class create_grid:
     # Creating a grid
     def __init__(self, SapObj, parameters : dict = {}):
 
-        #print("create_grid > parameters : ", parameters)
+        #print("create_grid > parameters: ", parameters)
         
         self.__Object = SapObj._Object
         self.__Model = SapObj._Model
 
         # parameters
+        C2025 = "C20/25"
+        C2530 = "C25/30"
+        girder = "girder"
+        crossbeam = "crossbeam"
+        slab = "slab"
+
+        Materials = parameters["Materials"] if "Materials" in parameters else [
+            {
+                "Material": C2025,
+                "Type": "Concrete", # 2            
+                "Fc": 20e03,
+                "E1": 28e06,
+                "LtWtConc": "No",
+                "SSCurveOpt": "Parametric - Simple", # 1
+                "SSHysType": "Takeda", # 2
+                "ec2": 2, # StrainAtFc [mm/m]
+                "ecu": 3.5, # StrainUltimate [mm/m]
+            },
+            {
+                "Material": C2530,
+                "Type": "Concrete", # 2            
+                "Fc": 25e03,
+                "E1": 31e06,
+                "LtWtConc": "No",
+                "SSCurveOpt": "Parametric - Simple", # 1
+                "SSHysType": "Takeda", # 2
+                "ec2": 2, # StrainAtFc [mm/m]
+                "ecu": 3.5, # StrainUltimate [mm/m]
+            }
+        ]
+        #print("Materials: ", Materials)
+
+        Sections = parameters["Sections"] if "Sections" in parameters else [
+            {
+                "SectionName": crossbeam,
+                "Material": C2530,
+                "Shape": "Rectangular",
+                "t3": 1,
+                "t2": .2,
+            },
+            {
+                "SectionName": girder,
+                "Material": C2530,
+                "Shape": "I/Wide Flange",
+                "t3": 1.2,
+                "t2": .45,
+                "tf": .15,
+                "tw": .1,
+                "t2b": .45,
+                "tfb": .15,
+                "FilletRadius": 0
+            },
+            {
+                "SectionName": "SDGirder",
+                "Material": C2530,
+                "Shape": "SD Section",
+            },
+        ]
+        #print("Sections: ", Sections)
+
+        Polygons = parameters["Polygons"] if "Polygons" in parameters else [
+            {
+                "SectionName": "SDGirder",
+                "ShapeName": "SDGirder-1",
+                "ShapeMat": C2530,
+                "FillColor": 8421631, #"gray4",
+                "XYR": [
+                    {"X": -.2, "Y": 0},
+                    {"X": .2, "Y": 0},
+                    {"X": .2, "Y": .15},
+                    {"X": -.2, "Y": .15}
+                ]
+            },
+            {
+                "SectionName": "SDGirder",
+                "ShapeName": "SDGirder-2",
+                "ShapeMat": C2530,
+                "FillColor": 8421631, #"gray4",
+                "XYR": [
+                    {"X": -.05, "Y": .15},
+                    {"X": .05, "Y": .15},
+                    {"X": .05, "Y": 1.},
+                    {"X": -.05, "Y": 1.}
+                ]
+            },
+            {
+                "SectionName": "SDGirder",
+                "ShapeName": "SDGirder-3",
+                "ShapeMat": C2530,
+                "FillColor": 8421631, #"gray4",
+                "XYR": [
+                    {"X": -.2, "Y": 1.},
+                    {"X": .2, "Y": 1.},
+                    {"X": .2, "Y": 1.15},
+                    {"X": -.2, "Y": 1.15}
+                ]
+            },
+            {
+                "SectionName": "SDGirder",
+                "ShapeName": "SDGirder-4",
+                "ShapeMat": C2025,
+                "FillColor": 8454016, #"gray4",
+                "XYR": [
+                    {"X": -.75, "Y": 1.15},
+                    {"X": .75, "Y": 1.15},
+                    {"X": .75, "Y": 1.35},
+                    {"X": -.75, "Y": 1.35}
+                ]
+            }
+        ]
+        #print("Polygons: ", Polygons)
+
+        AreaSections = parameters["AreaSections"] if "AreaSections" in parameters else [
+            {
+                "Section": slab,
+                "Material": C2025,
+                "Type": "Shell-Thin",
+                "Thickness": .2,
+                "BendThick": .2,
+            },
+        ]
+        #print("AreaSections: ", AreaSections)
+
         Grid = parameters["Grid"] if "Grid" in parameters else {
                 "GUID": "grd01",
-                "GridName": "G01",
+                "GridName": "Grd01",
                 "GridAngle": 0,
-                "GirdersNumber": 4,
+                "GirdersNumber": 5,
                 "GirdersSpacing": 1.5,
-                "SlabThickness" : .2,
                 #"Girder": 1,
                 "LdX": 4,
+                "GridModelType": "FEM", # FEM, Grid
                 #"ShowJointsText": False,
                 #"ShowBeamsText": False,
                 #"ShowShellsText": False,                
                 "E1": 31e06,
                 "I33": 3125e-06,
-                "E1I33": 96875, # 31 * 3125
-                "GridModelType": "FEM" # FEM, Grid
+                "E1I33": 96875, # 31 * 3125                
             }    
         
         GridFields = parameters["GridFields"] if "GridFields" in parameters else [
@@ -414,9 +536,9 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfd01",
                 "GridFieldName": "Left",
-                "GirdersLength": 2.750,
-                "GirdersSection": "girder",
-                "CrossbeamsSection": "crossbeam",
+                "GirdersLength": 2.75,
+                "GirdersSection": girder,
+                "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
                 "GridFieldSelected": False
             },
@@ -425,8 +547,8 @@ class create_grid:
                 "GridFieldGUID": "gfd02",
                 "GridFieldName": "Center",
                 "GirdersLength": 26,
-                "GirdersSection": "girder",
-                "CrossbeamsSection": "crossbeam",
+                "GirdersSection": girder,
+                "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 6,
                 "GridFieldSelected": False
             },
@@ -434,9 +556,9 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfd03",
                 "GridFieldName": "Right",
-                "GirdersLength": 2.750,
-                "GirdersSection": "girder",
-                "CrossbeamsSection": "crossbeam",
+                "GirdersLength": 2.75,
+                "GirdersSection": girder,
+                "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
                 "GridFieldSelected": False
             }
@@ -461,8 +583,9 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 1,
                 "dy": .2,
-                "AxisSelected": True,
                 "P": 100,
+                #
+                "AxisSelected": True,                
                 "x1": 1,
                 "y1": 0,
                 "x2": 1,
@@ -475,8 +598,9 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 2,
                 "dy": .200,
-                "AxisSelected": True,
                 "P": 100,
+                #
+                "AxisSelected": True,                
                 "x1": 2,
                 "y1": 0,
                 "x2": 2,
@@ -503,8 +627,9 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 5,
                 "dy": .200,
-                "AxisSelected": True,
                 "P": 100,
+                #
+                "AxisSelected": True,
                 "x1": 5,
                 "y1": 0,
                 "x2": 5,
@@ -545,58 +670,50 @@ class create_grid:
             }
         ]
 
-        # Define material properties
-        C2530 = "C25/30"
-        self.__Model.PropMaterial.SetMaterial(C2530, 2)
-        self.__Model.PropMaterial.SetOConcrete(C2530, 
-                                               Fc = 25e3, 
-                                               IsLightweight = False, 
-                                               FcsFactor = 0,
-                                               SSType = 1,
-                                               SSHysType = 2,
-                                               StrainAtFc = 2e-3, 
-                                               StrainUltimate = 3.5e-3                                               
-                                            )
+        # Define materials
+        for Material in Materials:
+            #print("Material: ", Material)
+            self.__SetMaterial(Material)    
+        
+        # Define sections
+        SectionProperties = {}
+        for Section in Sections:
+            #print("Section: ", Section)
+            SectionName = Section['SectionName']
+            polys = [i for i in Polygons if i['SectionName'] == SectionName]
+            self.__SetSection(Section, polys)
+            ret = self.__Model.PropFrame.GetSectProps(SectionName)
+            #print(SectionName, ": ", [ret[i] for i in [0, 5]])
+            SectionProperties[SectionName] = {"Area": ret[0], "I33": ret[5]}
 
-        # Define section properties        
-        self.__Model.PropFrame.SetSDSection("girder", C2530)
-        #add polygon shape to new property
-        NumberPoints = 8
-        x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
-        y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
-        r = [0, 0, 0, 0, 0, 0, 0, 0]
-        #self.__Model.PropFrame.SDShape.SetPolygon("girder", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
-        self.__Model.PropFrame.SDShape.SetISection("girder", "SH1", C2530, "", 0, 0, 0, -1, 1.5, 1, .2, .2, .8, .2)
-        #self.__Model.PropFrame.SetRectangle("girder", C2530, 1.5, .5)
-        """
-        PropFrame.SDShape
-        Function SetISection(
-            ByVal Name As String,
-            ByRef ShapeName As String,
-            ByVal MatProp As String,
-            ByVal PropName As String, 
-            ByVal XCenter As Double, 
-            ByVal YCenter As Double, 
-            ByVal Rotation As Double, 
-            Optional ByVal Color As Long = -1, 
-            Optional ByVal h As Double = 24, 
-            Optional ByVal bf As Double = 24, 
-            Optional ByVal tf As Double = 2.4, 
-            Optional ByVal tw As Double = 2.4, 
-            Optional ByVal bfb As Double = 24, 
-            Optional ByVal tfb As Double = 2.4) As Long
-        """
+            """        
+                Function GetSectProps ( 
+                    Name As String,
+                    ByRef Area As Double,
+                    ByRef As2 As Double,
+                    ByRef As3 As Double,
+                    ByRef Torsion As Double,
+                    ByRef I22 As Double,
+                    ByRef I33 As Double,
+                    ByRef S22 As Double,
+                    ByRef S33 As Double,
+                    ByRef Z22 As Double,
+                    ByRef Z33 As Double,
+                    ByRef R22 As Double,
+                    ByRef R33 As Double
+                ) As Integer
+            """
+        #print("SectionProperties:\n", SectionProperties)
 
-        self.__Model.PropFrame.SetRectangle("crossbeam", C2530, 1, 0.2)
-        #self.__Model.PropFrame.SetTee("crossbeam", C2530, 1, 1, .2, .2)
-
-        SlabThickness = Grid['SlabThickness'] if 'SlabThickness' in Grid else .2
-        self.__Model.PropArea.SetShell("slab", 1, C2530, 0, SlabThickness, SlabThickness)
+        # Define area sections
+        for AreaSection in AreaSections:
+            #print("AreaSection: ", AreaSection)
+            self.__SetAreaSection(AreaSection)
 
         # groups
         base_points = []
-        girders = []
-        crossbeams = []
+        #girders = []
+        #crossbeams = []
 
         # generate model
         #widthOfTheGrid = self.__widthOfTheGrid(Grid)        
@@ -604,7 +721,7 @@ class create_grid:
         #XiList = self.__XiList(Grid, GridFields)
         #print(widthOfTheGrid, lengthOfTheGrid, XiList)
 
-        ScenariosList = [Scenario for Scenario in Scenarios if Scenario['GridGUID'] == Grid['GUID']]
+        ScenariosList = [i for i in Scenarios if i['GridGUID'] == Grid['GUID']]
         #print("ScenariosList: ", ScenariosList)
 
         ActiveTrucksList = self.__ActiveTrucksList(ScenariosList, Trucks, Axes)
@@ -658,6 +775,7 @@ class create_grid:
         #print("Joints: ", Joints)
         for i in range(0, len(Joints), 3):
             name = str(int(Joints[i]))
+            #name = str(Joints[i])
             #print(i, name, Joints[i + 1], Joints[i + 2])
             self.__Model.PointObj.AddCartesian(Joints[i + 1], Joints[i + 2], 0, name, name)
 
@@ -680,6 +798,7 @@ class create_grid:
         #print("JointsWithRestrains: ", len(JointsWithRestrains))
         for i in range(0, len(JointsWithRestrains), 1):
             name = str(int(JointsWithRestrains[i]))
+            #name = JointsWithRestrains[i]
             self.__Model.PointObj.SetRestraint(name, [True, True, True, True, False, True])
             base_points.append(name)
 
@@ -729,6 +848,168 @@ class create_grid:
          
         print("Grid created successfully!")
     
+    # set Material
+    def __SetMaterial(self, Material = {}):
+        #print("Material: ", Material)
+        Name = Material["Material"]
+        Type = Material["Type"]
+
+        # Concrete
+        if Type == "Concrete":
+            IsLightweight = False if Material["LtWtConc"] == "No" else True
+            # SSType
+            match Material["SSCurveOpt"]:
+                case 'User defined':
+                    SSType = 0
+                case 'Parametric - Simple':
+                    SSType = 1
+                case 'Parametric - Mander':
+                    SSType = 2
+                case _:
+                    SSType = 1   # default
+            # SSHysType
+            match Material["SSHysType"]:
+                case 'Elastic':
+                    SSHysType = 0
+                case 'Kinematic':
+                    SSHysType = 1
+                case 'Takeda':
+                    SSHysType = 2
+                case _:
+                    SSHysType = 2   # default
+
+            self.__Model.PropMaterial.SetMaterial(Name, 2)
+            self.__Model.PropMaterial.SetOConcrete(Name, 
+                                                    Fc = Material["Fc"], 
+                                                    IsLightweight = IsLightweight, 
+                                                    FcsFactor = 0,
+                                                    SSType = SSType,
+                                                    SSHysType = SSHysType,
+                                                    StrainAtFc = Material["ec2"] * pow(10, -3), 
+                                                    StrainUltimate = Material["ecu"] * pow(10, -3),                                               
+                                                )
+
+    # set Section
+    def __SetSection(self, Section = {}, Polygons = []):
+        #print("Section: ", Section, "\nPolygons: ", Polygons)
+        SectionName = Section["SectionName"]
+        Material = Section["Material"]
+        Shape = Section["Shape"]
+
+        t3 = Section["t3"] if "t3" in Section else 0.5
+        t2 = Section["t2"] if "t2" in Section else 0.3
+        tf = Section["tf"] if "tf" in Section else 0.2
+        tw = Section["tw"] if "tw" in Section else 0.2
+        t2b = Section["t2b"] if "t2b" in Section else 1.
+        tfb = Section["tfb"] if "tfb" in Section else 0.2
+
+        # Rectangular
+        if Shape == "Rectangular":
+            self.__Model.PropFrame.SetRectangle(SectionName, Material, t3, t2)
+
+        # Tee
+        """
+        Function SetTee ( 
+            Name As String,
+            MatProp As String,
+            T3 As Double,
+            T2 As Double,
+            Tf As Double,
+            Tw As Double,
+            Optional Color As Integer = -1,
+            Optional Notes As String = "",
+            Optional GUID As String = ""
+        ) As Integer
+        """
+        if Shape == "Tee":
+            self.__Model.PropFrame.SetTee(SectionName, Material, t3, t2, tf, tw)
+
+        # I/Wide Flange
+        """
+        Function SetISection ( 
+            Name As String,
+            MatProp As String,
+            T3 As Double,
+            T2 As Double,
+            Tf As Double,
+            Tw As Double,
+            T2b As Double,
+            Tfb As Double,
+            Optional Color As Integer = -1,
+            Optional Notes As String = "",
+            Optional GUID As String = ""
+        ) As Integer
+        """
+        if Shape == "I/Wide Flange":
+            self.__Model.PropFrame.SetISection(SectionName, Material, t3, t2, tf, tw, t2b, tfb)
+
+        if Shape == "SD Section":
+            """
+            Function SetSDSection ( 
+                Name As String,
+                MatProp As String,
+                Optional DesignType As Integer = 0,
+                Optional Color As Integer = -1,
+                Optional Notes As String = "",
+                Optional GUID As String = ""
+            ) As Integer
+            """
+            self.__Model.PropFrame.SetSDSection(SectionName, Material)
+            for Polygon in Polygons:
+                ShapeName = Polygon["ShapeName"]
+                ShapeMat = Polygon["ShapeMat"]
+                XYR = Polygon["XYR"] if "XYR" in Polygon else []
+                Color = Polygon["FillColor"] if "FillColor" in Polygon else -1
+                SSOverwrite = ""
+
+                NumberPoints = len(XYR)
+                if NumberPoints > 2:
+                    X = [i['X'] for i in XYR]
+                    Y = [i['Y'] for i in XYR]
+                    Radius = [0] * NumberPoints 
+                    #print(X, Y, R)
+                    self.__Model.PropFrame.SDShape.SetPolygon(
+                        SectionName, 
+                        ShapeName, 
+                        ShapeMat, 
+                        SSOverwrite, 
+                        NumberPoints,
+                        X, Y, Radius,
+                        Color, 
+                        False, 
+                        None
+                    )
+
+    # set AreaSection
+    def __SetAreaSection(self, AreaSection = {}):
+        #print("AreaSection: ", AreaSection)
+        Section = AreaSection["Section"]
+        Material = AreaSection["Material"]
+        Type = AreaSection["Type"]
+        MatAng = 0
+
+        # ShellType
+        match Type:
+            case 'Shell-Thin':
+                ShellType = 1
+            case 'Shell-Thick':
+                ShellType = 2
+            case 'Plate-Thin':
+                ShellType = 3
+            case 'Plate-Thck':
+                ShellType = 4
+            case 'Membrane':
+                ShellType = 5
+            case 'Shell layered/nonlinear':
+                ShellType = 6
+            case _:
+                ShellType = 1   # default
+
+        Thickness = AreaSection['Thickness'] if 'Thickness' in AreaSection else .2
+        BendThick = AreaSection['BendThick'] if 'BendThick' in AreaSection else Thickness
+
+        self.__Model.PropArea.SetShell(Section, ShellType, Material, MatAng, Thickness, BendThick)
+
     # width Of the grid
     @staticmethod
     def __widthOfTheGrid(Grid = {}):   
@@ -890,7 +1171,6 @@ class create_grid:
         #
         # GridFields
         #
-
         for GridField in GridFields:
             CrossbeamsNumber = GridField["CrossbeamsNumber"] if "CrossbeamsNumber" in GridField else 1
             CrossbeamsSection = GridField["CrossbeamsSection"] if "CrossbeamsSection" in GridField else None
@@ -1000,9 +1280,9 @@ class create_grid:
                         JointsWithRestrains = np.append(JointsWithRestrains, [Joint])
 
                 # save joints of interest
-                if len(xGridList[np.isin(xGridList, x)]) > 0:
-                    jointsOfInterest.append({'Joint': Joint})
-                    JointsOfInterest = np.append(JointsOfInterest, [Joint])
+                if len(yList[np.isin(yList, y)]) > 0 and len(xGridList[np.isin(xGridList, x)]) > 0:
+                    jointsOfInterest.append({'Joint': str(Joint)})
+                    JointsOfInterest = np.append(JointsOfInterest, [str(Joint)])
                 
                 # girders
                 if y in yList and i > 0:
@@ -1102,6 +1382,7 @@ class create_grid:
                 Shells = np.append(Shells, [str(Shell), str(JointI), str(JointJ), str(JointK), str(JointL)])
         
         # GroupNames
+        groups["Point-JointsOfInterest"] = np.unique(JointsOfInterest).tolist()
         GroupNames = list(groups.keys())
         #print("GroupNames: ", GroupNames)
 
@@ -1112,7 +1393,7 @@ class create_grid:
         #print("Joints: ", Joints)
         #print("JointsWithLoad: ", JointsWithLoad)
         #print("JointsWithRestrains: ", JointsWithRestrains)
-        #print("JointsOfInterest: ", JointsOfInterest.shape)   
+        #print("JointsOfInterest: ", JointsOfInterest)   
 
         #print("beams: ", beams)
         #print("Beams: ", Beams)
