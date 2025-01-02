@@ -50,6 +50,9 @@ Sap.core.create_grid() # {"NumberBaysX" : 1, "NumberStorys" : 1}
 #
 Sap.RefreshView(0, False)
 
+# 
+# !! va nel build.py !!
+#
 # Add elements to your group
 #Sap.Scripts.Group.RemovefromGroup("base_points", Sap.base_points, "Point")
 groups = [
@@ -71,7 +74,7 @@ Sap.File.Save(ModelPath)
 
 # Remove all cases for analysis
 Sap.Scripts.Analyze.RemoveCases("All")
-# Select cases for analysis
+# Select cases for analysis: default + custom
 CaseName = ["DEAD", "MODAL", "G1k", "G2k", "Q1k"] + Sap.Scenarios
 Sap.Scripts.Analyze.AddCases(CaseName = CaseName)
 # Delete Results

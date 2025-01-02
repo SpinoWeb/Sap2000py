@@ -1,5 +1,6 @@
 import numpy as np
 import math
+#from collections import defaultdict
 
 #from Sap2000py.SapSection import SapSection
 
@@ -384,7 +385,6 @@ class create_3d_frame:
 class create_grid:
     # Creating a grid
     def __init__(self, SapObj, parameters : dict = {}):
-
         #print("create_grid > parameters: ", parameters)
         
         self.__Object = SapObj._Object
@@ -393,8 +393,8 @@ class create_grid:
         # parameters
         C2025 = "C20/25"
         C2530 = "C25/30"
-        girder = "girder"
-        crossbeam = "crossbeam"
+        girder = "Girder"
+        crossbeam = "Crossbeam"
         slab = "slab"
 
         Materials = parameters["Materials"] if "Materials" in parameters else [
@@ -520,9 +520,9 @@ class create_grid:
                 "GridAngle": 0,
                 "GirdersNumber": 5,
                 "GirdersSpacing": 1.5,
-                #"Girder": 1,
+                #"GirderIndex": 1,
                 "LdX": 4,
-                "GridModelType": "FEM", # FEM, Grid
+                "GridModelType": "Grid", # FEM, Grid
                 #"ShowJointsText": False,
                 #"ShowBeamsText": False,
                 #"ShowShellsText": False,                
@@ -583,7 +583,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 1,
                 "dy": .2,
-                "P": 100,
+                "P": 50,
                 #
                 "AxisSelected": True,                
                 "x1": 1,
@@ -598,7 +598,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 2,
                 "dy": .200,
-                "P": 100,
+                "P": 50,
                 #
                 "AxisSelected": True,                
                 "x1": 2,
@@ -613,8 +613,9 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 4,
                 "dy": .200,
-                "AxisSelected": True,
-                "P": 100,
+                "P": 50,
+                #
+                "AxisSelected": True,                
                 "x1": 4,
                 "y1": 0,
                 "x2": 4,
@@ -627,7 +628,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 5,
                 "dy": .200,
-                "P": 100,
+                "P": 50,
                 #
                 "AxisSelected": True,
                 "x1": 5,
@@ -785,6 +786,8 @@ class create_grid:
         for i in range(0, len(Beams), 5):
             #print(i, Beams[i], Beams[i + 1], Beams[i + 2], Beams[i + 3], Beams[i + 4])
             self.__Model.FrameObj.AddByPoint(Beams[i + 1], Beams[i + 2], Beams[i], Beams[i + 3])
+            # https://docs.csiamerica.com/help-files/csibridge/Advanced_tab/Assign/Frame/Frame_Insertion_Point.htm
+            self.__Model.FrameObj.SetInsertionPoint(Beams[i], 8, False, True, [0, 0, 0], [0, 0, 0])
         
         # Shells
         Shells = Elements['Shells']
@@ -806,9 +809,14 @@ class create_grid:
         #print("groups: ", groups)
         for g in list(groups.keys()):
             gtype = g.split('-')[0]
+            ret = SapObj.Scripts.Group.GetElements(g)
+            #print(f'{g} : {ret}')
+            if len(ret) > 0:
+                ret = self.__Model.GroupDef.Delete(g)
+                #print(f'{g} : {ret}')
             SapObj.Scripts.Group.AddtoGroup(g, groups[g], gtype)
-            #items = SapObj.Scripts.Group.GetElements(g)
-            #print(f'{g} : {items}')
+            #ret = SapObj.Scripts.Group.GetElements(g)
+            #print(f'{g} : {ret}')
 
         # loadpatterns
         SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
@@ -832,10 +840,14 @@ class create_grid:
 
         # loads
         JointsWithLoad = Elements['JointsWithLoad']
-        #print("JointsWithLoad: ", len(JointsWithLoad))
+        #print("JointsWithLoad: ", len(JointsWithLoad), "\n", JointsWithLoad)
         for i in range(0, len(JointsWithLoad), 3):
             #print(i, JointsWithLoad[i], JointsWithLoad[i + 1], JointsWithLoad[i + 2])
-            self.__Model.PointObj.SetLoadForce(JointsWithLoad[i], JointsWithLoad[i + 1], [0, 0, float(JointsWithLoad[i + 2]), 0, 0, 0]) # GLOBAL
+
+            # Replace = False (Default) If it is True, all previous point force loads, if any,
+            # assigned to the specified point object(s) in the specified load pattern are deleted 
+            # before making the new assignment.
+            self.__Model.PointObj.SetLoadForce(JointsWithLoad[i], JointsWithLoad[i + 1], [0, 0, float(JointsWithLoad[i + 2]), 0, 0, 0], Replace = False)
 
         # storing
         SapObj.base_points = base_points
@@ -1107,7 +1119,84 @@ class create_grid:
         
         return ActiveTrucksList
     
+    #
+    # C-A method
+    #
+    def __diList(self, Grid = {}):
+        #print("GridJs > diList", Grid);
+
+        GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
+        GirdersSpacing = Grid["GirdersSpacing"] if "GirdersSpacing" in Grid else 1
+        #GridAngle = Grid["GridAngle"] if "GridAngle" in Grid else 0
+        #const GridAngleRad = (GridAngle * Math.PI) / 180;
+
+        widthOfTheGrid = self.__widthOfTheGrid(Grid)
+        #const widthOfTheGrid: number = (GirdersNumber - 1) * GirdersSpacing;
+
+        diList = []
+        for i in range(GirdersNumber):
+            diList.append(i * GirdersSpacing - widthOfTheGrid / 2)
+
+        return diList    
+
+    def __nm(self, Grid = {}):
+        #print("GridJs > nm", Grid);
+
+        GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
+
+        diList = self.__diList(Grid)
+
+        n = GirdersNumber
+        m = 0
+
+        for i in range(GirdersNumber):
+            m = m + 1 * diList[i] * diList[i]
+
+        return { "n": n, "m": m }
+
+    def __riList(self, Grid = {}, e = 0):
+        #print("GridJs > riList", Grid, e);
+
+        nm = self.__nm(Grid)
+        diList = self.__diList(Grid)
+
+        riList = []
+        for i in range(len(diList)):
+            riList.append(1 / nm['n'] + (e * diList[i]) / nm['m'])
+
+        #return ki / n + (e * di * ki) / m;
+        return riList
+    
+    # return distributed loads list
+    # LoadsList includes loads of a scenario
+    def __PiList(self, Grid = {}, LoadsList = []):
+        #print("LoadsList: ", LoadsList)
+
+        PiList = []
+
+        #GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
+        #GirdersSpacing = Grid["GirdersSpacing"] if "GirdersSpacing" in Grid else 1
+
+        widthOfTheGrid = self.__widthOfTheGrid(Grid)
+        diList = self.__diList(Grid)
+        nm = self.__nm(Grid)
+        #print(widthOfTheGrid, diList, nm)
+        
+        for l in LoadsList:
+            #print(l)
+            Yi = l['Y']
+            Pi = l['P']
+            ei = Yi - widthOfTheGrid / 2
+            ri = self.__riList(Grid, ei)
+            #print(Yi, ei, ri[0], sum(ri))
+
+            PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
+        #print("PiList: ", PiList)
+
+        return PiList
+
     # Get Elements
+    # LoadsList includes loads of all scenarios
     def __GetElements(self, Grid = {}, GridFields = [], LoadsList = []):
         #print("LoadsList: ", LoadsList)
 
@@ -1133,7 +1222,25 @@ class create_grid:
         #xGridList = np.sort(xGridList)
         #print("xGridList: ", xGridList)
 
+        # ScenarioLoads
+        # Grid model
+        ScenarioLoads = {}
+        for i in LoadsList:
+            t = ScenarioLoads.setdefault(i['ScenarioName'], [])
+            t.append(i)        
+        ScenarioNames = list(ScenarioLoads.keys())
+        #print("ScenarioNames: ", ScenarioNames)
+        #print("ScenarioLoads: ", ScenarioLoads)
+
+        PiList = []
+        for ScenarioName in ScenarioNames:
+            PiList = PiList + self.__PiList( Grid, ScenarioLoads[ScenarioName])
+        #PiList = PiList + self.__PiList( Grid, ScenarioLoads['Scenario 01'])
+        #print("PiList:\n", PiList)
+
+        #
         # init
+        #
         #Elements = []
         yList = np.array([])
         xList = np.array([])
@@ -1204,6 +1311,7 @@ class create_grid:
         #print("GridFieldsLimits: ", GridFieldsLimits)
         #print("xl: ", xl)
 
+        # all x values
         xListWithLoads = np.sort(np.unique(np.concatenate((xList, xGridList, np.array([i['X'] for i in LoadsList])))))
         #print("xListWithLoads: ", xListWithLoads)
 
@@ -1265,16 +1373,24 @@ class create_grid:
                 #print("Joints: ", Joints.shape)
 
                 # save loaded joints
-                a = [l for l in LoadsList if l['X'] == x and l['Y'] == y]
+                a = []
+                if GridModelType == "FEM":
+                    # FE model
+                    a = [l for l in LoadsList if l['X'] == x and l['Y'] == y]
+                else:
+                    # Grid model
+                    # y == 0 è l'ordinata della trave di riva
+                    a = [l for l in PiList if l['X'] == x and y == 0]
+
                 if len(a) > 0:
-                    #print(Joint, a)                    
+                    #print(Joint, a)              
                     for ai in a:
-                        P = - float(ai['P'])
+                        P = - float(ai['P']) if GridModelType == "FEM" else - float(ai['P'][0]) # P[0] è sulla trave di riva
                         jointsWithLoad.append({'Joint': Joint, 'ScenarioName': ai['ScenarioName'], 'P': P})
                         JointsWithLoad = np.append(JointsWithLoad, [Joint, ai['ScenarioName'], P])
 
                 # save restrained joints
-                if x == xList[0] or x == xList[-1]:                    
+                if x == xList[0] or x == xList[-1]:                              
                     if len(yList[np.isin(yList, y)]) > 0:
                         jointsWithRestrains.append({'Joint': Joint})
                         JointsWithRestrains = np.append(JointsWithRestrains, [Joint])
