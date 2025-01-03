@@ -1,6 +1,6 @@
 import numpy as np
 import math
-#from collections import defaultdict
+import pycba as cba
 
 #from Sap2000py.SapSection import SapSection
 
@@ -202,9 +202,9 @@ class create_3d_frame:
         beams_y = []
 
         # Define material properties
-        C2530 = "C25/30"
-        self.__Model.PropMaterial.SetMaterial(C2530, 2)
-        self.__Model.PropMaterial.SetOConcrete(C2530, 
+        Cgirder = "C25/30"
+        self.__Model.PropMaterial.SetMaterial(Cgirder, 2)
+        self.__Model.PropMaterial.SetOConcrete(Cgirder, 
                                                Fc = 25e3, 
                                                IsLightweight = False, 
                                                FcsFactor = 0,
@@ -230,8 +230,8 @@ class create_3d_frame:
         """
 
         # Define section properties
-        #self.__Model.PropFrame.SetRectangle("column", C2530, 0.3, 0.5)
-        self.__Model.PropFrame.SetCircle("column", C2530, 0.5)
+        #self.__Model.PropFrame.SetRectangle("column", Cgirder, 0.3, 0.5)
+        self.__Model.PropFrame.SetCircle("column", Cgirder, 0.5)
         """
         Function SetCircle ( 
             Name As String,
@@ -243,8 +243,8 @@ class create_3d_frame:
         ) As Integer
         """        
         
-        #self.__Model.PropFrame.SetRectangle("beam_x", C2530, 0.3, 0.5)
-        self.__Model.PropFrame.SetTee("beam_x", C2530, 0.5, 0.5, 0.1, 0.1)
+        #self.__Model.PropFrame.SetRectangle("beam_x", Cgirder, 0.3, 0.5)
+        self.__Model.PropFrame.SetTee("beam_x", Cgirder, 0.5, 0.5, 0.1, 0.1)
         """
         Function SetTee ( 
             Name As String,
@@ -259,8 +259,8 @@ class create_3d_frame:
         ) As Integer
         """
 
-        #self.__Model.PropFrame.SetRectangle("beam_y", C2530, 0.3, 0.4)
-        self.__Model.PropFrame.SetSDSection("beam_y", C2530)
+        #self.__Model.PropFrame.SetRectangle("beam_y", Cgirder, 0.3, 0.4)
+        self.__Model.PropFrame.SetSDSection("beam_y", Cgirder)
         """
         Function SetSDSection ( 
             Name As String,
@@ -277,7 +277,7 @@ class create_3d_frame:
         x = [-.3, .3, .4, .3, .2, -.2, -.3, -.4]
         y = [  0,  0, .5, .5, .1,  .1,  .5,  .5]
         r = [0, 0, 0, 0, 0, 0, 0, 0]
-        ret = self.__Model.PropFrame.SDShape.SetPolygon("beam_y", "SH1", C2530, "Default", NumberPoints, x, y, r, -1, False)
+        ret = self.__Model.PropFrame.SDShape.SetPolygon("beam_y", "SH1", Cgirder, "Default", NumberPoints, x, y, r, -1, False)
 
         # loadpatterns
         SapObj.Define.loadpatterns.Add("G1k", myType = 1, SelfWTMultiplier = 1)
@@ -391,18 +391,18 @@ class create_grid:
         self.__Model = SapObj._Model
 
         # parameters
-        C2025 = "C20/25"
-        C2530 = "C25/30"
+        Cslab = "C25/30"
+        Cgirder = "C28/35"
         girder = "Girder"
         crossbeam = "Crossbeam"
         slab = "slab"
 
         Materials = parameters["Materials"] if "Materials" in parameters else [
             {
-                "Material": C2025,
+                "Material": Cslab,
                 "Type": "Concrete", # 2            
-                "Fc": 20e03,
-                "E1": 28e06,
+                "Fc": 25e03,
+                "E1": 31e06,
                 "LtWtConc": "No",
                 "SSCurveOpt": "Parametric - Simple", # 1
                 "SSHysType": "Takeda", # 2
@@ -410,10 +410,10 @@ class create_grid:
                 "ecu": 3.5, # StrainUltimate [mm/m]
             },
             {
-                "Material": C2530,
+                "Material": Cgirder,
                 "Type": "Concrete", # 2            
-                "Fc": 25e03,
-                "E1": 31e06,
+                "Fc": 28e03,
+                "E1": 33e06,
                 "LtWtConc": "No",
                 "SSCurveOpt": "Parametric - Simple", # 1
                 "SSHysType": "Takeda", # 2
@@ -426,14 +426,14 @@ class create_grid:
         Sections = parameters["Sections"] if "Sections" in parameters else [
             {
                 "SectionName": crossbeam,
-                "Material": C2530,
+                "Material": Cgirder,
                 "Shape": "Rectangular",
                 "t3": 1,
                 "t2": .2,
             },
             {
                 "SectionName": girder,
-                "Material": C2530,
+                "Material": Cgirder,
                 "Shape": "I/Wide Flange",
                 "t3": 1.2,
                 "t2": .45,
@@ -445,7 +445,7 @@ class create_grid:
             },
             {
                 "SectionName": "SDGirder",
-                "Material": C2530,
+                "Material": Cgirder,
                 "Shape": "SD Section",
             },
         ]
@@ -455,7 +455,7 @@ class create_grid:
             {
                 "SectionName": "SDGirder",
                 "ShapeName": "SDGirder-1",
-                "ShapeMat": C2530,
+                "ShapeMat": Cgirder,
                 "FillColor": 8421631, #"gray4",
                 "XYR": [
                     {"X": -.2, "Y": 0},
@@ -467,7 +467,7 @@ class create_grid:
             {
                 "SectionName": "SDGirder",
                 "ShapeName": "SDGirder-2",
-                "ShapeMat": C2530,
+                "ShapeMat": Cgirder,
                 "FillColor": 8421631, #"gray4",
                 "XYR": [
                     {"X": -.05, "Y": .15},
@@ -479,7 +479,7 @@ class create_grid:
             {
                 "SectionName": "SDGirder",
                 "ShapeName": "SDGirder-3",
-                "ShapeMat": C2530,
+                "ShapeMat": Cgirder,
                 "FillColor": 8421631, #"gray4",
                 "XYR": [
                     {"X": -.2, "Y": 1.},
@@ -491,7 +491,7 @@ class create_grid:
             {
                 "SectionName": "SDGirder",
                 "ShapeName": "SDGirder-4",
-                "ShapeMat": C2025,
+                "ShapeMat": Cslab,
                 "FillColor": 8454016, #"gray4",
                 "XYR": [
                     {"X": -.75, "Y": 1.15},
@@ -506,7 +506,7 @@ class create_grid:
         AreaSections = parameters["AreaSections"] if "AreaSections" in parameters else [
             {
                 "Section": slab,
-                "Material": C2025,
+                "Material": Cslab,
                 "Type": "Shell-Thin",
                 "Thickness": .2,
                 "BendThick": .2,
@@ -522,7 +522,7 @@ class create_grid:
                 "GirdersSpacing": 1.5,
                 #"GirderIndex": 1,
                 "LdX": 4,
-                "GridModelType": "Grid", # FEM, Grid
+                "GridModelType": "FEM", # FEM, Grid
                 #"ShowJointsText": False,
                 #"ShowBeamsText": False,
                 #"ShowShellsText": False,                
@@ -583,7 +583,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 1,
                 "dy": .2,
-                "P": 50,
+                "P": 20,
                 #
                 "AxisSelected": True,                
                 "x1": 1,
@@ -598,7 +598,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 2,
                 "dy": .200,
-                "P": 50,
+                "P": 20,
                 #
                 "AxisSelected": True,                
                 "x1": 2,
@@ -613,7 +613,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 4,
                 "dy": .200,
-                "P": 50,
+                "P": 40,
                 #
                 "AxisSelected": True,                
                 "x1": 4,
@@ -628,7 +628,7 @@ class create_grid:
                 "AxisName": "New Axis",
                 "x": 5,
                 "dy": .200,
-                "P": 50,
+                "P": 40,
                 #
                 "AxisSelected": True,
                 "x1": 5,
@@ -1174,12 +1174,13 @@ class create_grid:
 
         PiList = []
 
-        #GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
-        #GirdersSpacing = Grid["GirdersSpacing"] if "GirdersSpacing" in Grid else 1
+        #
+        # Courbon - Albenga
+        #
 
         widthOfTheGrid = self.__widthOfTheGrid(Grid)
-        diList = self.__diList(Grid)
-        nm = self.__nm(Grid)
+        #diList = self.__diList(Grid)
+        #nm = self.__nm(Grid)
         #print(widthOfTheGrid, diList, nm)
         
         for l in LoadsList:
@@ -1188,11 +1189,39 @@ class create_grid:
             Pi = l['P']
             ei = Yi - widthOfTheGrid / 2
             ri = self.__riList(Grid, ei)
+            #print("ca: ", ri, sum(ri))
             #print(Yi, ei, ri[0], sum(ri))
 
-            PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
-        #print("PiList: ", PiList)
+            #PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
+        
+        #
+        # cba
+        #
 
+        GirdersNumber = Grid["GirdersNumber"] if "GirdersNumber" in Grid else 2
+        GirdersSpacing = Grid["GirdersSpacing"] if "GirdersSpacing" in Grid else 1
+
+        #L = [i * GirdersSpacing for i in list(range(GirdersNumber))]
+        L = [GirdersSpacing] * (GirdersNumber - 1)
+        EI = 1.
+        R = [-1, 0] * GirdersNumber
+        for l in LoadsList:
+            #print(l)
+            Yi = l['Y']
+            Pi = float(l['P'])
+            i_span = int(Yi / GirdersSpacing) + 1
+            a = Yi - (i_span - 1) * GirdersSpacing
+            #print(i_span, Pi, a)
+            #print(L, EI, R)
+            beam_analysis = cba.BeamAnalysis(L, EI, R)
+            beam_analysis.add_pl(i_span, 1, a)
+            beam_analysis.analyze()
+            ri = beam_analysis.beam_results.R
+            #print("cba: ", ri, sum(ri))
+
+            PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
+
+        #print("PiList: ", PiList)
         return PiList
 
     # Get Elements
@@ -1223,7 +1252,7 @@ class create_grid:
         #print("xGridList: ", xGridList)
 
         # ScenarioLoads
-        # Grid model
+        # Grid model / distribuire trasversalmente i carichi sulle travi
         ScenarioLoads = {}
         for i in LoadsList:
             t = ScenarioLoads.setdefault(i['ScenarioName'], [])
