@@ -648,7 +648,7 @@ class create_grid:
                     {
                         "TruckGUID": "tck01",
                         "x": 2,
-                        "y": 2
+                        "y": 3
                     }
                 ]
             },
@@ -660,12 +660,12 @@ class create_grid:
                     {
                         "TruckGUID": "tck01",
                         "x": 2,
-                        "y": 2
+                        "y": 3
                     },
                     {
                         "TruckGUID": "tck01",
                         "x": 13,
-                        "y": 2
+                        "y": 3
                     }
                 ]
             }
