@@ -522,7 +522,7 @@ class create_grid:
                 "GirdersSpacing": 1.5,
                 #"GirderIndex": 1,
                 "LdX": 4,
-                "GridModelType": "FEM", # FEM, Grid
+                "GridModelType": "Grid", # FEM, Grid
                 #"ShowJointsText": False,
                 #"ShowBeamsText": False,
                 #"ShowShellsText": False,                
@@ -532,6 +532,16 @@ class create_grid:
             }    
         
         GridFields = parameters["GridFields"] if "GridFields" in parameters else [
+            {
+                "GridGUID": "grd01",
+                "GridFieldGUID": "gfdsx",
+                "GridFieldName": "Sx",
+                "GirdersLength": 11,
+                "GirdersSection": girder,
+                "CrossbeamsSection": crossbeam,
+                "CrossbeamsNumber": 2,
+                "GridFieldSelected": False
+            },
             {
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfd01",
@@ -561,7 +571,17 @@ class create_grid:
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
                 "GridFieldSelected": False
-            }
+            },
+            {
+                "GridGUID": "grd01",
+                "GridFieldGUID": "gfddx",
+                "GridFieldName": "Dx",
+                "GirdersLength": 11,
+                "GirdersSection": girder,
+                "CrossbeamsSection": crossbeam,
+                "CrossbeamsNumber": 2,
+                "GridFieldSelected": False
+            },
         ]
         #print("GridFields: ", GridFields)
 
@@ -647,7 +667,7 @@ class create_grid:
                 "ScenarioTrucks": [
                     {
                         "TruckGUID": "tck01",
-                        "x": 2,
+                        "x": 11+2,
                         "y": 3
                     }
                 ]
@@ -659,12 +679,12 @@ class create_grid:
                 "ScenarioTrucks": [
                     {
                         "TruckGUID": "tck01",
-                        "x": 2,
+                        "x": 11+2,
                         "y": 3
                     },
                     {
                         "TruckGUID": "tck01",
-                        "x": 13,
+                        "x": 11+13,
                         "y": 3
                     }
                 ]
@@ -1298,6 +1318,7 @@ class create_grid:
         xl = 0
         GridFieldsLimits = np.zeros(shape = (0, 2))
         #print("GridFieldsLimits: ", GridFieldsLimits)
+        GridFieldsEnd = np.array([])
         GirdersSectionsList = []
         CrossbeamsSectionsList = []        
 
@@ -1332,12 +1353,15 @@ class create_grid:
             GridFieldsLimits = np.append(GridFieldsLimits, np.array([[xl, x + i * spacing]]), axis = 0)
             #GridFieldsLimits.push([xl, xl + GirdersLength]);
             xl = xl + GirdersLength
+            GridFieldsEnd = np.append(GridFieldsEnd, xl)
 
         xList = np.sort(xList)
-        #print("xList: ", xList)
+
+        print("xList: ", xList)
         #print("GirdersSectionsList: ", GirdersSectionsList)
         #print("CrossbeamsSectionsList: ", CrossbeamsSectionsList)
-        #print("GridFieldsLimits: ", GridFieldsLimits)
+        print("GridFieldsLimits: ", GridFieldsLimits)
+        print("GridFieldsEnd: ", GridFieldsEnd)
         #print("xl: ", xl)
 
         # all x values
@@ -1363,6 +1387,7 @@ class create_grid:
         #
         Joint = 0
         Beam = 0
+        gf = -1 # GridField index
         g = 0 # group of girders
         cb = 0 # group crossbeams
 
@@ -1380,6 +1405,12 @@ class create_grid:
 
             # loop along x
             for i, x in enumerate(xListWithLoads):
+                # gf
+                res = np.where(GridFieldsEnd == x)
+                gf = -1 if len(res[0]) < 1 else res[0][0]
+                print("gf: ", gf, x)
+
+
                 # get the GirdersSection
                 # let GirdersSection: string | undefined;
                 flag = False
@@ -1412,21 +1443,21 @@ class create_grid:
                     a = [l for l in PiList if l['X'] == x and y == 0]
 
                 if len(a) > 0:
-                    #print(Joint, a)              
+                    #print(Joint, a)       
                     for ai in a:
                         P = - float(ai['P']) if GridModelType == "FEM" else - float(ai['P'][0]) # P[0] è sulla trave di riva
                         jointsWithLoad.append({'Joint': Joint, 'ScenarioName': ai['ScenarioName'], 'P': P})
                         JointsWithLoad = np.append(JointsWithLoad, [Joint, ai['ScenarioName'], P])
 
-                # save restrained joints
-                if x == xList[0] or x == xList[-1]:                              
+                # save restrained joints                
+                if x == xList[0] or x == xList[-1]:                          
                     if len(yList[np.isin(yList, y)]) > 0:
-                        jointsWithRestrains.append({'Joint': Joint})
+                        jointsWithRestrains.append({ 'Joint': Joint })
                         JointsWithRestrains = np.append(JointsWithRestrains, [Joint])
 
                 # save joints of interest
                 if len(yList[np.isin(yList, y)]) > 0 and len(xGridList[np.isin(xGridList, x)]) > 0:
-                    jointsOfInterest.append({'Joint': str(Joint)})
+                    jointsOfInterest.append({ 'Joint': str(Joint) })
                     JointsOfInterest = np.append(JointsOfInterest, [str(Joint)])
                 
                 # girders
