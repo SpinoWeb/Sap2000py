@@ -396,6 +396,7 @@ class create_grid:
         girder = "Girder"
         crossbeam = "Crossbeam"
         slab = "slab"
+        Pinned = [True, True, True, True, False, True]
 
         Materials = parameters["Materials"] if "Materials" in parameters else [
             {
@@ -522,7 +523,7 @@ class create_grid:
                 "GirdersSpacing": 1.5,
                 #"GirderIndex": 1,
                 "LdX": 4,
-                "GridModelType": "Grid", # FEM, Grid
+                "GridModelType": "FEM", # FEM, Grid
                 #"ShowJointsText": False,
                 #"ShowBeamsText": False,
                 #"ShowShellsText": False,                
@@ -540,7 +541,8 @@ class create_grid:
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
-                "GridFieldSelected": False
+                "GridFieldSelected": False,
+                "StartRestraints": Pinned
             },
             {
                 "GridGUID": "grd01",
@@ -550,7 +552,10 @@ class create_grid:
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
-                "GridFieldSelected": False
+                "GridFieldSelected": False,
+                "JJReleases": [False, False, False, False, False, True],
+                "EndReleases": [0, 0, 0, 0, 0, 0],
+                "StartRestraints": Pinned
             },
             {
                 "GridGUID": "grd01",
@@ -560,7 +565,9 @@ class create_grid:
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 6,
-                "GridFieldSelected": False
+                "GridFieldSelected": False,
+                "JJReleases": [False, False, False, False, False, True],
+                "EndReleases": [0, 0, 0, 0, 0, 0]
             },
             {
                 "GridGUID": "grd01",
@@ -570,7 +577,8 @@ class create_grid:
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
-                "GridFieldSelected": False
+                "GridFieldSelected": False,
+                "EndRestraints": Pinned
             },
             {
                 "GridGUID": "grd01",
@@ -580,7 +588,8 @@ class create_grid:
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
-                "GridFieldSelected": False
+                "GridFieldSelected": False,
+                "EndRestraints": Pinned
             },
         ]
         #print("GridFields: ", GridFields)
@@ -809,6 +818,14 @@ class create_grid:
             # https://docs.csiamerica.com/help-files/csibridge/Advanced_tab/Assign/Frame/Frame_Insertion_Point.htm
             self.__Model.FrameObj.SetInsertionPoint(Beams[i], 8, False, True, [0, 0, 0], [0, 0, 0])
         
+        # EndReleases
+        EndReleases = Elements['EndReleases']
+        #print("EndReleases: ", len(EndReleases))
+        IIReleases = [False, False, False, False, False, False]
+        StartReleases = [0, 0, 0, 0, 0, 0]
+        for i in range(0, len(EndReleases), 3):
+            self.__Model.FrameObj.SetReleases(EndReleases[i], IIReleases, EndReleases[i + 1], StartReleases, EndReleases[i + 2])
+
         # Shells
         Shells = Elements['Shells']
         #print("Shells: ", len(Shells))
@@ -817,13 +834,11 @@ class create_grid:
             Point = [Shells[i + 1], Shells[i + 2], Shells[i + 3], Shells[i + 4]]
             self.__Model.AreaObj.AddByPoint(4, Point, Shells[i], "slab")
 
-        JointsWithRestrains = Elements['JointsWithRestrains']
-        #print("JointsWithRestrains: ", len(JointsWithRestrains))
-        for i in range(0, len(JointsWithRestrains), 1):
-            name = str(int(JointsWithRestrains[i]))
-            #name = JointsWithRestrains[i]
-            self.__Model.PointObj.SetRestraint(name, [True, True, True, True, False, True])
-            base_points.append(name)
+        JointsWithRestraints = Elements['JointsWithRestraints']
+        #print("JointsWithRestraints: ", len(JointsWithRestraints))
+        for i in range(0, len(JointsWithRestraints), 2):
+            self.__Model.PointObj.SetRestraint(JointsWithRestraints[i], JointsWithRestraints[i + 1])
+            base_points.append(JointsWithRestraints[i])
 
         groups = Elements['groups']
         #print("groups: ", groups)
@@ -1212,7 +1227,7 @@ class create_grid:
             #print("ca: ", ri, sum(ri))
             #print(Yi, ei, ri[0], sum(ri))
 
-            #PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
+            PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
         
         #
         # cba
@@ -1239,7 +1254,7 @@ class create_grid:
             ri = beam_analysis.beam_results.R
             #print("cba: ", ri, sum(ri))
 
-            PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
+            #PiList.append({'ScenarioName': l['ScenarioName'], 'X': l['X'], 'P': [Pi * i for i in ri]})
 
         #print("PiList: ", PiList)
         return PiList
@@ -1316,9 +1331,8 @@ class create_grid:
 
         x = 0
         xl = 0
-        GridFieldsLimits = np.zeros(shape = (0, 2))
+        GridFieldsLimits = np.zeros(shape = (0, 4))
         #print("GridFieldsLimits: ", GridFieldsLimits)
-        GridFieldsEnd = np.array([])
         GirdersSectionsList = []
         CrossbeamsSectionsList = []        
 
@@ -1350,18 +1364,16 @@ class create_grid:
             CrossbeamsSectionsList.append(CrossbeamsSection)
 
             # GridFieldsLimits
-            GridFieldsLimits = np.append(GridFieldsLimits, np.array([[xl, x + i * spacing]]), axis = 0)
+            GridFieldsLimits = np.append(GridFieldsLimits, np.array([[xl, xl + spacing, xl + GirdersLength, x + i * spacing]]), axis = 0)
             #GridFieldsLimits.push([xl, xl + GirdersLength]);
             xl = xl + GirdersLength
-            GridFieldsEnd = np.append(GridFieldsEnd, xl)
 
         xList = np.sort(xList)
 
-        print("xList: ", xList)
+        #print("xList: ", xList)
         #print("GirdersSectionsList: ", GirdersSectionsList)
         #print("CrossbeamsSectionsList: ", CrossbeamsSectionsList)
-        print("GridFieldsLimits: ", GridFieldsLimits)
-        print("GridFieldsEnd: ", GridFieldsEnd)
+        #print("GridFieldsLimits: ", GridFieldsLimits)
         #print("xl: ", xl)
 
         # all x values
@@ -1371,23 +1383,25 @@ class create_grid:
         #
         joints = []
         jointsWithLoad = []
-        jointsWithRestrains = []
+        jointsWithRestraints = []
         jointsOfInterest = []
         beams = []
+        endReleases = []
         groups = {}
         
         # questi se evito di conservare oggetti
         Joints = np.array([])
         JointsWithLoad = np.array([])
-        JointsWithRestrains = np.array([])
+        JointsWithRestraints = []
         JointsOfInterest = np.array([])
         Beams = np.array([])
+        #EndReleases = np.array([])
+        EndReleases = []
         #Groups = np.array([])
     
         #
         Joint = 0
         Beam = 0
-        gf = -1 # GridField index
         g = 0 # group of girders
         cb = 0 # group crossbeams
 
@@ -1405,11 +1419,13 @@ class create_grid:
 
             # loop along x
             for i, x in enumerate(xListWithLoads):
-                # gf
-                res = np.where(GridFieldsEnd == x)
-                gf = -1 if len(res[0]) < 1 else res[0][0]
-                print("gf: ", gf, x)
-
+                # GridField: Start, End
+                GridFieldStart = np.where(GridFieldsLimits[:, 0] == x)
+                GridFieldStart = -1 if len(GridFieldStart[0]) < 1 else GridFieldStart[0][0]
+                #print("GridField: ", x, GridFieldStart)
+                GridFieldEnd = np.where(GridFieldsLimits[:, 2] == x)
+                GridFieldEnd = -1 if len(GridFieldEnd[0]) < 1 else GridFieldEnd[0][0]
+                #print("GridField: ", GridFieldStart, GridFieldEnd, x)
 
                 # get the GirdersSection
                 # let GirdersSection: string | undefined;
@@ -1417,7 +1433,7 @@ class create_grid:
                 c = -1
                 while flag == False and c < len(GridFieldsLimits):
                     c = c + 1
-                    flag = x >= GridFieldsLimits[c][0] and x <= GridFieldsLimits[c][1]
+                    flag = x >= GridFieldsLimits[c][0] and x <= GridFieldsLimits[c][3]
                 #print("GridJs > getElements", x, " > ", GirdersSection)
 
                 # joints
@@ -1449,11 +1465,28 @@ class create_grid:
                         jointsWithLoad.append({'Joint': Joint, 'ScenarioName': ai['ScenarioName'], 'P': P})
                         JointsWithLoad = np.append(JointsWithLoad, [Joint, ai['ScenarioName'], P])
 
-                # save restrained joints                
-                if x == xList[0] or x == xList[-1]:                          
+                # save restrained joints
+                """
+                if x == xList[0] or x == xList[-1]:
+                    Pinned = [True, True, True, True, False, True]                       
                     if len(yList[np.isin(yList, y)]) > 0:
-                        jointsWithRestrains.append({ 'Joint': Joint })
-                        JointsWithRestrains = np.append(JointsWithRestrains, [Joint])
+                        jointsWithRestraints.append({ 'Joint': str(Joint), 'Restraints': Pinned })
+                        JointsWithRestraints.extend([ str(Joint), Pinned ])
+                """
+
+                # Grid Field Limits: Restraints           
+                #print("Joint > GridFieldEnd: ", Joint, GridFieldEnd) if GridFieldEnd > -1 else None                    
+                #print("Joint > GridFieldStart: ", Joint, GridFieldStart) if GridFieldStart > -1 else None
+                if GridFieldStart > -1:
+                    GridField = GridFields[GridFieldStart]
+                    if "StartRestraints" in GridField and len(yList[np.isin(yList, y)]) > 0:
+                        jointsWithRestraints.append({ 'Joint': str(Joint), 'Restraints': GridField["StartRestraints"] })
+                        JointsWithRestraints.extend([ str(Joint), GridField["StartRestraints"] ])
+                if GridFieldEnd > -1:
+                    GridField = GridFields[GridFieldEnd]
+                    if "EndRestraints" in GridField and len(yList[np.isin(yList, y)]) > 0:
+                        jointsWithRestraints.append({ 'Joint': str(Joint), 'Restraints': GridField["EndRestraints"] })
+                        JointsWithRestraints.extend([ str(Joint), GridField["EndRestraints"] ])               
 
                 # save joints of interest
                 if len(yList[np.isin(yList, y)]) > 0 and len(xGridList[np.isin(xGridList, x)]) > 0:
@@ -1478,6 +1511,26 @@ class create_grid:
                     pointsGroup = np.append(pointsGroup, [str(JointI), str(JointJ)])
 
                     JointI = JointJ
+
+                    # Gried Field Limits: Releases        
+                    # End / JJ
+                    #print("Beam > GridFieldEnd: ", Joint, Beam, GridFieldEnd) if GridFieldEnd > -1 else None
+                    if GridFieldEnd > -1:
+                        GridField = GridFields[GridFieldEnd]                    
+                        if "JJReleases" in GridField and "EndReleases" in GridField:
+                            #print("Beam > GridFieldEnd: ", Beam, GridField)
+                            endReleases.append({
+                                "Beam": str(Beam), 
+                                "JJReleases": GridField["JJReleases"], 
+                                "EndReleases": GridField["EndReleases"]
+                                })
+                            #EndReleases = np.append(EndReleases, [str(Beam), GridField["JJReleases"], GridField["EndReleases"]])
+                            EndReleases.extend([str(Beam), GridField["JJReleases"], GridField["EndReleases"]])
+                    
+                    # Start / II        
+                    # lo start si perde le travi del primo gridfield
+                    #print("Beam > GridFieldStart: ", Joint, Beam + 1, GridFieldStart) if GridFieldStart > -1 else None             
+
                 else:
                     JointI = Joint
                 
@@ -1564,15 +1617,17 @@ class create_grid:
 
         #print("joints: ", joints)
         #print("jointsWithLoad: ", jointsWithLoad)
-        #print("jointsWithRestrains: ", jointsWithRestrains)
+        #print("JointsWithRestraints: ", JointsWithRestraints)
         #print("jointsOfInterest: ", jointsOfInterest)      
         #print("Joints: ", Joints)
         #print("JointsWithLoad: ", JointsWithLoad)
-        #print("JointsWithRestrains: ", JointsWithRestrains)
+        #print("JointsWithRestraints: ", JointsWithRestraints)
         #print("JointsOfInterest: ", JointsOfInterest)   
 
         #print("beams: ", beams)
         #print("Beams: ", Beams)
+        #print("endReleases: ", endReleases)
+        #print("EndReleases: ", EndReleases)
         
         #print("shells: ", shells)
         #print("Shells: ", Shells)
@@ -1582,9 +1637,10 @@ class create_grid:
         return {
             #"joints": joints,
             #"jointsWithLoad": jointsWithLoad,
-            #"jointsWithRestrains": jointsWithRestrains,
+            #"JointsWithRestraints": JointsWithRestraints,
             #"jointsOfInterest": jointsOfInterest,
             #"beams": beams,
+            #"endReleases": endReleases,
             #"shells": shells if GridModelType == "FEM" else [],
             "groups" : groups,
             #
@@ -1595,8 +1651,9 @@ class create_grid:
             #
             "Joints": Joints,
             "JointsWithLoad": JointsWithLoad,
-            "JointsWithRestrains": JointsWithRestrains,
+            "JointsWithRestraints": JointsWithRestraints,
             "JointsOfInterest": JointsOfInterest,
             "Beams": Beams,
+            "EndReleases": EndReleases,
             "Shells": Shells if GridModelType == "FEM" else []
         }
