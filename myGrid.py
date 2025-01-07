@@ -86,8 +86,9 @@ Sap.Scripts.Analyze.RunAll()
 wb = openpyxl.Workbook()
 
 # select combo for output
-xcomboName = "Scenario 01"
-comboName = "Scenario 02"
+comboName = "Scenario 01"
+xcomboName = "Scenario 02"
+xcomboName = "Scenario 03"
 Sap.Scripts.SelectCombo_Case([comboName])
 
 # post processing > xlsx

@@ -384,7 +384,7 @@ class create_3d_frame:
 
 class create_grid:
     # Creating a grid
-    def __init__(self, SapObj, parameters : dict = {}):
+    def __init__(self, SapObj, parameters: dict = {}):
         #print("create_grid > parameters: ", parameters)
         
         self.__Object = SapObj._Object
@@ -396,7 +396,7 @@ class create_grid:
         girder = "Girder"
         crossbeam = "Crossbeam"
         slab = "slab"
-        Pinned = [True, True, True, True, False, True]
+        Pinned = [True, True, True, False, False, False]
 
         Materials = parameters["Materials"] if "Materials" in parameters else [
             {
@@ -520,7 +520,7 @@ class create_grid:
                 "GridName": "Grd01",
                 "GridAngle": 0,
                 "GirdersNumber": 5,
-                "GirdersSpacing": 1.5,
+                "GirdersSpacing": 1.7,
                 #"GirderIndex": 1,
                 "LdX": 4,
                 "GridModelType": "FEM", # FEM, Grid
@@ -537,7 +537,7 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfdsx",
                 "GridFieldName": "Sx",
-                "GirdersLength": 11,
+                "GirdersLength": 12,
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
@@ -548,10 +548,10 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfd01",
                 "GridFieldName": "Left",
-                "GirdersLength": 2.75,
+                "GirdersLength": 2.7,
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
-                "CrossbeamsNumber": 2,
+                "CrossbeamsNumber": 1,
                 "GridFieldSelected": False,
                 "JJReleases": [False, False, False, False, False, True],
                 "EndReleases": [0, 0, 0, 0, 0, 0],
@@ -561,10 +561,10 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfd02",
                 "GridFieldName": "Center",
-                "GirdersLength": 26,
+                "GirdersLength": 20.3,
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
-                "CrossbeamsNumber": 6,
+                "CrossbeamsNumber": 3,
                 "GridFieldSelected": False,
                 "JJReleases": [False, False, False, False, False, True],
                 "EndReleases": [0, 0, 0, 0, 0, 0]
@@ -573,10 +573,10 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfd03",
                 "GridFieldName": "Right",
-                "GirdersLength": 2.75,
+                "GirdersLength": 2.7,
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
-                "CrossbeamsNumber": 2,
+                "CrossbeamsNumber": 1,
                 "GridFieldSelected": False,
                 "EndRestraints": Pinned
             },
@@ -584,7 +584,7 @@ class create_grid:
                 "GridGUID": "grd01",
                 "GridFieldGUID": "gfddx",
                 "GridFieldName": "Dx",
-                "GirdersLength": 11,
+                "GirdersLength": 12,
                 "GirdersSection": girder,
                 "CrossbeamsSection": crossbeam,
                 "CrossbeamsNumber": 2,
@@ -600,7 +600,7 @@ class create_grid:
                 "TruckName": "T12",
                 "ShowAxesText": False,
                 "Width": 2,
-                "Length": 6
+                "Length": 9
             }
         ]
         #print("Trucks: ", Trucks)
@@ -610,9 +610,9 @@ class create_grid:
                 "TruckGUID": "tck01",
                 "AxisGUID": "3bf57ed5",
                 "AxisName": "New Axis",
-                "x": 1,
+                "x": 0.5,
                 "dy": .2,
-                "P": 20,
+                "P": 42,
                 #
                 "AxisSelected": True,                
                 "x1": 1,
@@ -625,9 +625,9 @@ class create_grid:
                 "TruckGUID": "tck01",
                 "AxisGUID": "3bf57ed6",
                 "AxisName": "New Axis",
-                "x": 2,
-                "dy": .200,
-                "P": 20,
+                "x": 3.2,
+                "dy": .2,
+                "P": 19,
                 #
                 "AxisSelected": True,                
                 "x1": 2,
@@ -640,7 +640,7 @@ class create_grid:
                 "TruckGUID": "tck01",
                 "AxisGUID": "3bf57ed7",
                 "AxisName": "New Axis",
-                "x": 4,
+                "x": 5.8,
                 "dy": .200,
                 "P": 40,
                 #
@@ -655,9 +655,9 @@ class create_grid:
                 "TruckGUID": "tck01",
                 "AxisGUID": "3bf57ed8",
                 "AxisName": "New Axis",
-                "x": 5,
+                "x": 8.5,
                 "dy": .200,
-                "P": 40,
+                "P": 22,
                 #
                 "AxisSelected": True,
                 "x1": 5,
@@ -676,8 +676,8 @@ class create_grid:
                 "ScenarioTrucks": [
                     {
                         "TruckGUID": "tck01",
-                        "x": 11+2,
-                        "y": 3
+                        "x": 20.5,
+                        "y": 1.7
                     }
                 ]
             },
@@ -688,17 +688,24 @@ class create_grid:
                 "ScenarioTrucks": [
                     {
                         "TruckGUID": "tck01",
-                        "x": 11+2,
-                        "y": 3
+                        "x": 14,
+                        "y": 1.7
                     },
                     {
                         "TruckGUID": "tck01",
-                        "x": 11+13,
-                        "y": 3
+                        "x": 14 + 10,
+                        "y": 1.7
                     }
                 ]
             }
         ]
+
+        #
+        # # # # # #
+        #
+
+        # Cleaning
+        self.clean_model()
 
         # Define materials
         for Material in Materials:
@@ -844,11 +851,6 @@ class create_grid:
         #print("groups: ", groups)
         for g in list(groups.keys()):
             gtype = g.split('-')[0]
-            ret = SapObj.Scripts.Group.GetElements(g)
-            #print(f'{g} : {ret}')
-            if len(ret) > 0:
-                ret = self.__Model.GroupDef.Delete(g)
-                #print(f'{g} : {ret}')
             SapObj.Scripts.Group.AddtoGroup(g, groups[g], gtype)
             #ret = SapObj.Scripts.Group.GetElements(g)
             #print(f'{g} : {ret}')
@@ -894,6 +896,33 @@ class create_grid:
         SapObj.JointsOfInterest = Elements["JointsOfInterest"]
          
         print("Grid created successfully!")
+    
+    # clean model
+    def clean_model(self):
+        # Delete groups
+        ret, all_objects, ret = self.__Model.GroupDef.GetNameList()
+        for i in all_objects:
+            self.__Model.GroupDef.Delete(i)
+        print("All groups deleted successfully")
+
+        # Delete areas
+        ret, all_objects, ret = self.__Model.PropArea.GetNameList()
+        for i in all_objects:
+            self.__Model.PropArea.Delete(i)
+        print("All areas deleted successfully")
+
+        # Delete frames
+        ret, all_objects, ret  = self.__Model.FrameObj.GetNameList()
+        for i in all_objects:
+            self.__Model.FrameObj.Delete(i)
+        print("All frames deleted successfully")
+
+        # Delete points
+        ret, all_objects, ret  = self.__Model.PointObj.GetNameList()
+        for i in all_objects:
+            self.__Model.PointObj.Delete(i)
+        print("All points deleted successfully")
+
     
     # set Material
     def __SetMaterial(self, Material = {}):
