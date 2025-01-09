@@ -2,14 +2,14 @@ from pathlib import Path
 
 import numpy as np
 import openpyxl
-from rich import print
+#from rich import print
 
 from Sap2000py import Saproject
 
 ProjectName = "myGrid"
 
 # full path to the model
-ModelPath = Path(".\Test\\" + ProjectName + ".sdb")
+ModelPath = Path(".\\Test\\" + ProjectName + ".sdb")
 
 # Create a Sap2000py obj (default: attatch to instance and create if not exist)
 Sap = Saproject()
@@ -92,7 +92,7 @@ xcomboName = "Scenario 03"
 Sap.Scripts.SelectCombo_Case([comboName])
 
 # post processing > xlsx
-FileName = Path(".\Test\\" + ProjectName + "_" + comboName + ".xlsx")
+FileName = Path(".\\Test\\" + ProjectName + "_" + comboName + ".xlsx")
 
 # get Joint reaction result by group name
 Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
@@ -142,11 +142,14 @@ for g in GroupPoints:
     Sap.Scripts.writecell(ws, np.array([headers]), "A1" )
     Sap.Scripts.writecell(ws, np.transpose(np.array(ret[1 : len(headers) + 1])), "A2" )
 
+# save excel
 wb.save(FileName)
+print("xlsx file saved")
 
 # Save your file with a Filename(default: your ModelPath)
 #Sap.File.Save()
 Sap.File.Save(ModelPath)
+print("sdb file saved")
 
 # Don't forget to close the program
 #Sap.closeSap()
