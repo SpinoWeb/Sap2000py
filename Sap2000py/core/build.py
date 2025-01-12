@@ -1,6 +1,8 @@
 import numpy as np
 import math
 import pycba as cba
+import matplotlib.pyplot as plt
+import pickle
 
 #from Sap2000py.SapSection import SapSection
 
@@ -390,6 +392,8 @@ class create_grid:
         self.__Object = SapObj._Object
         self.__Model = SapObj._Model
 
+        #Job = {}
+
         # parameters
         Cslab = "C25/30"
         Cgirder = "C28/35"
@@ -423,6 +427,7 @@ class create_grid:
             }
         ]
         #print("Materials: ", Materials)
+        #Job['Materials'] = Materials
 
         Sections = parameters["Sections"] if "Sections" in parameters else [
             {
@@ -451,6 +456,7 @@ class create_grid:
             },
         ]
         #print("Sections: ", Sections)
+        #Job['Sections'] = Sections
 
         Polygons = parameters["Polygons"] if "Polygons" in parameters else [
             {
@@ -503,6 +509,7 @@ class create_grid:
             }
         ]
         #print("Polygons: ", Polygons)
+        #Job['Polygons'] = Polygons
 
         AreaSections = parameters["AreaSections"] if "AreaSections" in parameters else [
             {
@@ -514,6 +521,7 @@ class create_grid:
             },
         ]
         #print("AreaSections: ", AreaSections)
+        #Job['AreaSections'] = AreaSections
 
         Grid = parameters["Grid"] if "Grid" in parameters else {
                 "GUID": "grd01",
@@ -530,7 +538,9 @@ class create_grid:
                 "E1": 31e06,
                 "I33": 3125e-06,
                 "E1I33": 96875, # 31 * 3125                
-            }    
+            }
+        #print("Grid: ", Grid)
+        #Job['Grid'] = Grid  
         
         GridFields = parameters["GridFields"] if "GridFields" in parameters else [
             {
@@ -593,80 +603,107 @@ class create_grid:
             },
         ]
         #print("GridFields: ", GridFields)
+        #Job['GridFields'] = GridFields  
 
         Trucks = parameters["Trucks"] if "Trucks" in parameters else [
             {
                 "GUID": "tck01",
-                "TruckName": "T12",
-                "ShowAxesText": False,
+                "TruckName": "T12-1",
                 "Width": 2,
-                "Length": 9
+                "Length": 5
+            },
+            {
+                "GUID": "tck02",
+                "TruckName": "T12-2",
+                "Width": 2,
+                "Length": 5.4
+            },
+            {
+                "GUID": "tck03",
+                "TruckName": "T12-3",
+                "Width": 2,
+                "Length": 6.8
+            },
+            {
+                "GUID": "tck04",
+                "TruckName": "T12-4",
+                "Width": 2,
+                "Length": 6.1
             }
         ]
         #print("Trucks: ", Trucks)
+        #Job['Trucks'] = Trucks 
 
         Axes = parameters["Axes"] if "Axes" in parameters else [
             {
                 "TruckGUID": "tck01",
                 "AxisGUID": "3bf57ed5",
                 "AxisName": "New Axis",
-                "x": 0.5,
-                "dy": .2,
-                "P": 42,
-                #
-                "AxisSelected": True,                
-                "x1": 1,
-                "y1": 0,
-                "x2": 1,
-                "y2": 2,
-                "stroke": "FF8282"
+                "x": 2.3 / 2,
+                "dy": .4,
+                "P": 19,
             },
             {
                 "TruckGUID": "tck01",
                 "AxisGUID": "3bf57ed6",
                 "AxisName": "New Axis",
-                "x": 3.2,
-                "dy": .2,
-                "P": 19,
-                #
-                "AxisSelected": True,                
-                "x1": 2,
-                "y1": 0,
-                "x2": 2,
-                "y2": 2,
-                "stroke": "FF8282"
+                "x": 2.3 / 2 + 2.7,
+                "dy": .4,
+                "P": 42,
             },
+            
             {
-                "TruckGUID": "tck01",
-                "AxisGUID": "3bf57ed7",
+                "TruckGUID": "tck02",
+                "AxisGUID": "3bf57ed1",
                 "AxisName": "New Axis",
-                "x": 5.8,
-                "dy": .200,
-                "P": 40,
-                #
-                "AxisSelected": True,                
-                "x1": 4,
-                "y1": 0,
-                "x2": 4,
-                "y2": 2,
-                "stroke": "FF8282"
-            },
-            {
-                "TruckGUID": "tck01",
-                "AxisGUID": "3bf57ed8",
-                "AxisName": "New Axis",
-                "x": 8.5,
-                "dy": .200,
+                "x": 2.7 / 2,
+                "dy": .4,
                 "P": 22,
-                #
-                "AxisSelected": True,
-                "x1": 5,
-                "y1": 0,
-                "x2": 5,
-                "y2": 2,
-                "stroke": "FF8282"
-            }
+            },
+            {
+                "TruckGUID": "tck02",
+                "AxisGUID": "3bf57ed2",
+                "AxisName": "New Axis",
+                "x": 2.7 / 2 + 2.7,
+                "dy": .4,
+                "P": 40,
+            },
+
+            {
+                "TruckGUID": "tck03",
+                "AxisGUID": "3bf57edd",
+                "AxisName": "New Axis",
+                "x": 3.1 / 2,
+                "dy": .4,
+                "P": 25,
+            },
+            {
+                "TruckGUID": "tck03",
+                "AxisGUID": "4bf57edd",
+                "AxisName": "New Axis",
+                "x": 3.1 / 2 + 3.7,
+                "dy": .4,
+                "P": 37,
+            },
+
+            {
+                "TruckGUID": "tck04",
+                "AxisGUID": "3cf57edd",
+                "AxisName": "New Axis",
+                "x": 2.9 / 2,
+                "dy": .4,
+                "P": 25,
+            },
+            {
+                "TruckGUID": "tck04",
+                "AxisGUID": "3cf57edd",
+                "AxisName": "New Axis",
+                "x": 2.9 / 2 + 3.2,
+                "dy": .4,
+                "P": 37,
+            },
         ]
+        #Job['Axes'] = Axes 
 
         Scenarios = parameters["Scenarios"] if "Scenarios" in parameters else [
             {
@@ -676,8 +713,13 @@ class create_grid:
                 "ScenarioTrucks": [
                     {
                         "TruckGUID": "tck01",
-                        "x": 20.5,
-                        "y": 1.7
+                        "x": 20,
+                        "y": 2 - 1.7/2 + 1.55
+                    },
+                    {
+                        "TruckGUID": "tck02",
+                        "x": 25,
+                        "y": 2 - 1.7/2 + 1.55
                     }
                 ]
             },
@@ -688,20 +730,36 @@ class create_grid:
                 "ScenarioTrucks": [
                     {
                         "TruckGUID": "tck01",
-                        "x": 14,
-                        "y": 1.7
+                        "x": 12,
+                        "y": 2 - 1.7/2 + 1.55
                     },
                     {
-                        "TruckGUID": "tck01",
-                        "x": 14 + 10,
-                        "y": 1.7
+                        "TruckGUID": "tck02",
+                        "x": 18,
+                        "y": 2 - 1.7/2 + 1.55
+                    },
+                    {
+                        "TruckGUID": "tck03",
+                        "x": 26,
+                        "y": 2 - 1.7/2 + 1.55
+                    },
+                    {
+                        "TruckGUID": "tck04",
+                        "x": 33,
+                        "y": 2 - 1.7/2 + 1.55
                     }
                 ]
-            }
+            }         
         ]
+        #Job['Scenarios'] = Scenarios 
 
         #
-        # # # # # #
+        # # #  Plot
+        #
+        #print(Job)
+
+        #
+        # # #  Sap
         #
 
         # Cleaning
@@ -766,6 +824,8 @@ class create_grid:
 
         # Elements
         Elements = self.__GetElements(Grid, GridFields, ActiveTrucksList)
+        #print("Elements: ", dir(Elements))
+        self.__PlotElements(Elements, ScenariosList)
 
         #self.__Model.GridSys.SetGridSys("GridSysA", 1, 1, 0, 0)
         #print(dir(self.__Model.from_param))
@@ -923,6 +983,11 @@ class create_grid:
             self.__Model.PointObj.Delete(i)
         print("All points deleted successfully")
 
+        # Delete LoadPatterns
+        ret, all_objects, ret  = self.__Model.LoadPatterns.GetNameList()
+        for i in all_objects:
+            self.__Model.LoadPatterns.Delete(i)
+        print("All LoadPatterns deleted successfully")
     
     # set Material
     def __SetMaterial(self, Material = {}):
@@ -1686,3 +1751,98 @@ class create_grid:
             "EndReleases": EndReleases,
             "Shells": Shells if GridModelType == "FEM" else []
         }
+    
+    # Plot Elements
+    def __PlotElements(self, Elements = {}, ScenariosList = []):
+        #print("Elements: ", dir(Elements))
+        #print("ScenariosList: ", ScenariosList)
+
+        # Setting
+        cm = 1 / 2.54
+        w = 24 * cm
+        h = w * 9 / 16
+        text_kwargs = dict(ha='center', va='center', fontsize=9, color='C1')
+
+        # Joints
+        Joints = Elements['Joints']
+        #print("Joints: ", Joints)
+        x = np.array([])
+        y = np.array([])        
+        for i in range(0, len(Joints), 3):
+            #name = str(int(Joints[i]))
+            #print(name)
+            x = np.append(x, [Joints[i + 1]])
+            y = np.append(y, [Joints[i + 2]])
+        #print(x.shape, y.shape)
+        
+        x_min = np.min(x)
+        x_max = np.max(x)
+        y_min = np.min(y)
+        y_max = np.max(y)
+        x_len = x_max - x_min
+        y_len = y_max - y_min
+        h = w * y_len / x_len        
+       
+        # Beams
+        Beams = Elements['Beams']
+        #print("Beams: ", len(Beams))
+        xb = np.array([])
+        yb = np.array([]) 
+        for i in range(0, len(Beams), 5):
+            #print(Beams[i], Beams[i + 1], Beams[i + 2])
+            x_i = x[int(Beams[i + 1]) - 1]
+            y_i = y[int(Beams[i + 1]) - 1]
+            x_j = x[int(Beams[i + 2]) - 1]
+            y_j = y[int(Beams[i + 2]) - 1]
+            xb = np.append(xb, [x_i, x_j])
+            yb = np.append(yb, [y_i, y_j])
+            #plt.plot([x_i, x_j], [y_i, y_j], color="blue")
+            #print([x_i, x_j], [y_i, y_j])
+
+        # loads
+        JointsOfInterest = Elements['JointsOfInterest']
+        #print("JointsOfInterest: ", len(JointsOfInterest), "\n", JointsOfInterest)
+        xOf = np.array([])
+        yOf = np.array([])
+        for i in range(0, len(JointsOfInterest)):
+            x_i = x[int(JointsOfInterest[i]) - 1]
+            y_i = y[int(JointsOfInterest[i]) - 1]
+            xOf = np.append(xOf, [x_i])
+            yOf = np.append(yOf, [y_i])
+        #print(xOf, yOf)
+
+        # loads
+        JointsWithLoad = Elements['JointsWithLoad']
+        #print("JointsWithLoad: ", len(JointsWithLoad), "\n", JointsWithLoad)
+
+        for ScenarioName in [i['ScenarioName'] for i in ScenariosList]:
+            #print('ScenarioName: ', ScenarioName)
+            
+            #plt.clf()
+            plt.subplots(figsize = (w, h))
+            ax = plt.gca()
+            ax.set_aspect('equal', adjustable='box')
+
+            #plt.scatter(x, y, s=8, c="green", alpha=0.5, label='Joints')
+            for b in range(0, len(xb), 2):
+                plt.plot([ xb[b], xb[b + 1] ], [ yb[b], yb[b + 1] ], color="blue", label='Beams')
+            plt.scatter(xOf, yOf, s=24, marker='^', c="purple", alpha=0.95, label='JointsOfInterest')
+            #for x_i in np.unique(xOf):
+                #plt.text(x_i, y_max, str(np.round(x_i, 2)), **text_kwargs)
+
+            xl = np.array([])
+            yl = np.array([])  
+            for i in range(0, len(JointsWithLoad), 3):
+                #print(i, JointsWithLoad[i], JointsWithLoad[i + 1], JointsWithLoad[i + 2])
+                if JointsWithLoad[i + 1] == ScenarioName:
+                    x_i = x[int(JointsWithLoad[i]) - 1]
+                    y_i = y[int(JointsWithLoad[i]) - 1]
+                    xl = np.append(xl, [x_i])
+                    yl = np.append(yl, [y_i])
+            #print(xl, yl)        
+            plt.scatter(xl, yl, s=18, c="red", alpha=0.85, label=ScenarioName)
+            for x_i in np.unique(xl):
+                plt.text(x_i, y_min, str(np.round(x_i, 2)), rotation=90, **text_kwargs)
+            for y_i in np.unique(yl):
+                plt.text(x_min - 1, y_i, str(np.round(y_i, 2)), **text_kwargs)
+            plt.show()
