@@ -55,16 +55,16 @@ Sap.RefreshView(0, False)
 #
 # Add elements to your group
 #Sap.Scripts.Group.RemovefromGroup("base_points", Sap.base_points, "Point")
+"""
 groups = [
-    {"name": "base_points", "type": "Point"},
-    #{"name": "girders", "type": "Frame"},
-    #{"name": "crossbeams", "type": "Frame"}
+    {"name": "base_points", "type": "Point"}
 ]
 for g in groups:
     #print("g: ", g['name'], g)
     Sap.Scripts.Group.AddtoGroup(g["name"], getattr(Sap, g["name"]), g["type"])
     items = Sap.Scripts.Group.GetElements(g["name"])
     #print(f'{g["name"]} : {items}')
+"""
 
 # Select the group you need
 #Sap.Scripts.Group.Select("base_points")
@@ -94,6 +94,7 @@ Sap.Scripts.SelectCombo_Case([comboName])
 # post processing > xlsx
 FileName = Path(".\\Test\\" + ProjectName + "_" + comboName + ".xlsx")
 
+"""
 # get Joint reaction result by group name
 Name, AbsReaction, MaxReaction, MinReaction = Sap.Scripts.GetResults.JointReact_by_Group("base_points")
 #print("Name, AbsReaction: ", Name, AbsReaction)
@@ -103,8 +104,9 @@ Sap.Scripts.writecell(ws, np.array([["F1", "F2", "F3", "M1", "M2", "M3"]]), "B1"
 Sap.Scripts.writecell(ws, AbsReaction[: , [0, 1, 2, 3, 4, 5] ], "B2" )
 for i, v in enumerate(Name):
     ws[f"A{i + 2}"].value = v
+"""
 
-# get Joint force result by group name
+# get Frame force result by group name
 GroupFrames = [i for i in getattr(Sap, "GroupNames") if i.split('-')[0] == "Frame"]
 #print("GroupFrames: ", GroupFrames)
 for g in GroupFrames:

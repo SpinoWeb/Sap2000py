@@ -1345,6 +1345,7 @@ class create_grid:
             beam_analysis = cba.BeamAnalysis(L, EI, R)
             beam_analysis.add_pl(i_span, 1, a)
             beam_analysis.analyze()
+            #beam_analysis.plot_results()
             ri = beam_analysis.beam_results.R
             #print("cba: ", ri, sum(ri))
 
@@ -1705,6 +1706,7 @@ class create_grid:
                 Shells = np.append(Shells, [str(Shell), str(JointI), str(JointJ), str(JointK), str(JointL)])
         
         # GroupNames
+        groups["Point-JointsWithRestraints"] = [j for i, j in enumerate(JointsWithRestraints) if i % 2 == 0]        
         groups["Point-JointsOfInterest"] = np.unique(JointsOfInterest).tolist()
         GroupNames = list(groups.keys())
         #print("GroupNames: ", GroupNames)
@@ -1716,7 +1718,7 @@ class create_grid:
         #print("Joints: ", Joints)
         #print("JointsWithLoad: ", JointsWithLoad)
         #print("JointsWithRestraints: ", JointsWithRestraints)
-        #print("JointsOfInterest: ", JointsOfInterest)   
+        #print("JointsOfInterest: ", JointsOfInterest)
 
         #print("beams: ", beams)
         #print("Beams: ", Beams)
@@ -1727,6 +1729,7 @@ class create_grid:
         #print("Shells: ", Shells)
 
         #print("groups: ", groups)
+        #print(groups["Point-JointsWithRestraints"])
         
         return {
             #"joints": joints,
