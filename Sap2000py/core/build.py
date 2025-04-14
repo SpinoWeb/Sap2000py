@@ -845,7 +845,7 @@ class create_grid:
         dX = lengthOfTheGrid / LdX
         for i in range(LdX + 1):
             GridID = 'X' + str(i + 1)
-            XRYZCoord = str(i * dX).replace('.', ',')
+            XRYZCoord = str(i * dX)#.replace('.', ',')
             #print(GridID, " : ", XRYZCoord)
             data = data + ['GLOBAL', 'X', GridID, XRYZCoord, 'Primary', 'Gray8Dark', 'Yes', 'End', 'Yes', '2']
 
@@ -854,7 +854,7 @@ class create_grid:
         #print("yList: ", yList)
         for i, y in enumerate(yList):
             GridID = 'Y' + str(i + 1)
-            XRYZCoord = str(y).replace('.', ',')
+            XRYZCoord = str(y)#.replace('.', ',')
             #print(GridID, " : ", XRYZCoord)
             data = data + ['GLOBAL', 'Y', GridID, XRYZCoord, 'Primary', 'Gray4', 'Yes', 'Start', 'Yes', '2']
 
